@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Undercover — jeu de déduction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="wordmark">
+  <h1>Undercover</h1>
+  <span>jeu de mots &amp; de déduction</span>
+</div>
+
+<div class="scene">
+
+  <!-- ============ SETUP SCREEN ============ -->
+  <section id="setup" class="screen screen--active" aria-labelledby="setup-title">
+    <div class="dossier">
+      <h2 id="setup-title" style="font-size:1.5rem; margin-bottom:6px;">Nouvelle manche</h2>
+      <p class="dossier__lead">
+        Chaque joueur reçoit un mot en secret. Tous les civils reçoivent le même mot ;
+        l'Undercover reçoit un mot différent, mais proche. À vous de démasquer l'imposteur
+        avant qu'il ne devine votre mot.
+      </p>
+
+      <div class="field-row">
+        <h2>Joueurs</h2>
+        <div class="counter">
+          <button type="button" id="countMinus" aria-label="Retirer un joueur">−</button>
+          <div class="counter__value"><span id="countDisplay">6</span><small>de 3 à 20</small></div>
+          <button type="button" id="countPlus" aria-label="Ajouter un joueur">+</button>
+        </div>
+      </div>
+
+      <div id="namesGrid" class="names-grid"></div>
+
+      <div class="dossier__footer">
+        <p class="hint-text">Laissez un champ vide pour garder le nom par défaut ("Joueur n").</p>
+        <button type="button" id="startBtn" class="btn btn--primary">Lancer la manche</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GAME SCREEN ============ -->
+  <section id="game" class="screen" aria-labelledby="game-title">
+    <div class="game-header">
+      <div>
+        <h2 id="game-title">Manche <span id="roundNumber">1</span></h2>
+        <div class="game-header__meta"><span id="playerCountLabel">6</span> agents en jeu</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span id="viewedCount">0</span>/<span id="totalCount">6</span> cartes consultées</div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </div>
+
+    <p class="table-note">
+      Faites circuler l'appareil. Chaque joueur clique sur <strong>sa propre carte</strong>, mémorise
+      son mot en privé, puis appuie sur « Cacher » avant de transmettre l'appareil au suivant.
+      Une carte déjà consultée ne peut pas être rouverte.
+    </p>
+
+    <div id="statusBanner" class="status-banner">
+      Toutes les cartes ont été consultées. La discussion peut commencer.
+    </div>
+
+    <div id="cardsGrid" class="cards-grid" role="list"></div>
+
+    <div class="actions-row">
+      <div class="actions-row__group">
+        <button type="button" id="summaryBtn" class="btn btn--gold" disabled>Voir le bilan</button>
+      </div>
+      <div class="actions-row__group">
+        <button type="button" id="newRoundBtn" class="btn btn--ghost">Nouvelle manche (mêmes joueurs)</button>
+        <button type="button" id="resetBtn" class="btn btn--ghost">Nouvelle partie</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============ MODAL: reveal word ============ -->
+<div id="wordModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalOwner" aria-hidden="true">
+  <div class="modal__scrim"></div>
+  <div class="modal__panel">
+    <div class="modal__stamp">confidentiel</div>
+    <div class="modal__owner" id="modalOwner">Carte de —</div>
+    <div class="modal__role" id="modalRole">Civil</div>
+    <div class="modal__word-label">Ton mot</div>
+    <div class="modal__word" id="modalWord">—</div>
+    <p class="modal__privacy">Assure-toi que personne d'autre ne regarde l'écran avant de continuer.</p>
+    <div class="modal__buttons">
+      <button type="button" id="hideWordBtn" class="btn btn--primary">Cacher &amp; passer au suivant</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: round summary ============ -->
+<div id="summaryModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="summaryTitle" aria-hidden="true">
+  <div class="modal__scrim" id="summaryScrim"></div>
+  <div class="modal__panel summary-panel">
+    <h3 id="summaryTitle">Bilan de la manche</h3>
+    <p class="summary-sub">À révéler une fois la discussion et le vote terminés.</p>
+    <ul class="summary-list" id="summaryList"></ul>
+    <div class="modal__buttons">
+      <button type="button" id="closeSummaryBtn" class="btn btn--ghost">Fermer</button>
+      <button type="button" id="summaryNewRoundBtn" class="btn btn--primary">Nouvelle manche</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div class="visually-hidden" aria-live="polite" id="srAnnounce"></div>
+</body>
+</html>
