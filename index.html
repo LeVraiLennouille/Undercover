@@ -1,121 +1,237 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Undercover — jeu de déduction</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link href="style.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+  <title>Undercover — jeu de déduction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
 </head>
+
 <body>
 
-<div class="wordmark">
-  <h1>Undercover</h1>
-  <span>jeu de mots &amp; de déduction</span>
-</div>
+  <div class="wordmark">
+    <h1>Undercover</h1>
+    <span>jeu de mots &amp; de déduction</span>
+  </div>
 
-<div class="scene">
+  <div class="scene">
 
-  <!-- ============ SETUP SCREEN ============ -->
-  <section id="setup" class="screen screen--active" aria-labelledby="setup-title">
-    <div class="dossier">
-      <h2 id="setup-title" style="font-size:1.5rem; margin-bottom:6px;">Nouvelle manche</h2>
-      <p class="dossier__lead">
-        Chaque joueur reçoit un mot en secret. Tous les civils reçoivent le même mot ;
-        l'Undercover reçoit un mot différent, mais proche. À vous de démasquer l'imposteur
-        avant qu'il ne devine votre mot.
-      </p>
+    <section id="setup" class="screen screen--active" aria-labelledby="setup-title">
+      <div class="dossier">
+        <h2 id="setup-title" style="font-size:1.5rem; margin-bottom:6px;">Nouvelle manche</h2>
+        <p class="dossier__lead">
+          Chaque joueur reçoit un mot en secret. Tous les civils reçoivent le même mot ;
+          l'Undercover reçoit un mot différent, mais proche. À vous de démasquer l'imposteur
+          avant qu'il ne devine votre mot.
+        </p>
 
-      <div class="field-row">
-        <h2>Joueurs</h2>
-        <div class="counter">
-          <button type="button" id="countMinus" aria-label="Retirer un joueur">−</button>
-          <div class="counter__value"><span id="countDisplay">6</span><small>de 3 à 20</small></div>
-          <button type="button" id="countPlus" aria-label="Ajouter un joueur">+</button>
+        <div class="field-row">
+          <h2>Joueurs</h2>
+          <div class="counter">
+            <button type="button" id="countMinus" aria-label="Retirer un joueur">−</button>
+            <div class="counter__value"><span id="countDisplay">6</span><small>de 3 à 20</small></div>
+            <button type="button" id="countPlus" aria-label="Ajouter un joueur">+</button>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <h2>Undercover</h2>
+          <div class="counter">
+            <button type="button" id="underMinus" aria-label="Retirer un Undercover">−</button>
+            <div class="counter__value"><span id="underDisplay">1</span><small id="underRange">de 1 à 2</small></div>
+            <button type="button" id="underPlus" aria-label="Ajouter un Undercover">+</button>
+          </div>
+        </div>
+
+        <div class="special-roles">
+          <h2 class="special-roles__title">Rôles spéciaux <small>(optionnel)</small></h2>
+
+          <div class="field-row field-row--tight">
+            <h2>Mr. White</h2>
+            <div class="counter">
+              <button type="button" id="mrwhiteMinus" aria-label="Retirer un Mr. White">−</button>
+              <div class="counter__value"><span id="mrwhiteDisplay">0</span><small id="mrwhiteRange">de 0 à 1</small>
+              </div>
+              <button type="button" id="mrwhitePlus" aria-label="Ajouter un Mr. White">+</button>
+            </div>
+          </div>
+          <p class="hint-text hint-text--role">Ne reçoit aucun mot : il doit improviser pour ne pas se faire repérer.
+          </p>
+
+          <div class="toggle-list">
+            <label class="toggle-item">
+              <input type="checkbox" id="roleIdiot">
+              <span>
+                <strong>Idiot du village</strong>
+                <small>Gagne seul s'il est éliminé dès le tout premier vote.</small>
+              </span>
+            </label>
+            <label class="toggle-item">
+              <input type="checkbox" id="roleFantome">
+              <span>
+                <strong>Fantôme</strong>
+                <small>Peut continuer à voter même après avoir été éliminé.</small>
+              </span>
+            </label>
+            <label class="toggle-item">
+              <input type="checkbox" id="roleMime">
+              <span>
+                <strong>Mime</strong>
+                <small>Doit décrire son mot uniquement par gestes, sans parler.</small>
+              </span>
+            </label>
+            <label class="toggle-item">
+              <input type="checkbox" id="roleProcureur">
+              <span>
+                <strong>Procureur</strong>
+                <small>Tranche lui-même en cas d'égalité au vote.</small>
+              </span>
+            </label>
+            <label class="toggle-item">
+              <input type="checkbox" id="roleAmoureux">
+              <span>
+                <strong>Les Amoureux</strong>
+                <small>Liés à un autre joueur : si l'un est éliminé, l'autre l'est aussi. Dans des camps différents, ils
+                  doivent gagner à deux.</small>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div id="namesGrid" class="names-grid"></div>
+
+        <div class="dossier__footer">
+          <p class="hint-text">Laissez un champ vide pour garder le nom par défaut ("Joueur n").</p>
+          <button type="button" id="startBtn" class="btn btn--primary">Lancer la manche</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game" class="screen" aria-labelledby="game-title">
+      <div class="game-header">
+        <div>
+          <h2 id="game-title">Manche <span id="roundNumber">1</span></h2>
+          <div class="game-header__meta"><span id="playerCountLabel">6</span> agents en jeu</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span id="viewedCount">0</span>/<span id="totalCount">6</span> cartes consultées
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
         </div>
       </div>
 
-      <div id="namesGrid" class="names-grid"></div>
+      <p class="table-note" id="tableNote">
+        Faites circuler l'appareil. Chaque joueur clique sur <strong>sa propre carte</strong>, mémorise
+        son mot en privé, puis appuie sur « Cacher » avant de transmettre l'appareil au suivant.
+        Une carte déjà consultée ne peut pas être rouverte.
+      </p>
 
-      <div class="dossier__footer">
-        <p class="hint-text">Laissez un champ vide pour garder le nom par défaut ("Joueur n").</p>
-        <button type="button" id="startBtn" class="btn btn--primary">Lancer la manche</button>
+      <div id="statusBanner" class="status-banner">
+        Toutes les cartes ont été consultées. La discussion peut commencer, puis lancez le vote.
       </div>
-    </div>
-  </section>
 
-  <!-- ============ GAME SCREEN ============ -->
-  <section id="game" class="screen" aria-labelledby="game-title">
-    <div class="game-header">
-      <div>
-        <h2 id="game-title">Manche <span id="roundNumber">1</span></h2>
-        <div class="game-header__meta"><span id="playerCountLabel">6</span> agents en jeu</div>
+      <div id="cardsGrid" class="cards-grid" role="list"></div>
+
+      <div id="voteSection" class="vote-section">
+        <div class="vote-section__header">
+          <h3>Vote d'élimination</h3>
+          <p class="vote-section__hint">
+            Le groupe discute, puis désigne d'un commun accord le joueur à éliminer en appuyant sur sa carte.
+          </p>
+        </div>
+        <div id="eliminatedList" class="eliminated-list"></div>
+        <div id="voteGrid" class="cards-grid vote-grid" role="list"></div>
       </div>
-      <div class="progress-wrap">
-        <div class="progress-label"><span id="viewedCount">0</span>/<span id="totalCount">6</span> cartes consultées</div>
-        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+      <div id="gameOverBanner" class="game-over-banner">
+        <div class="game-over-banner__title" id="gameOverTitle">—</div>
+        <p class="game-over-banner__sub" id="gameOverSub"></p>
       </div>
-    </div>
 
-    <p class="table-note">
-      Faites circuler l'appareil. Chaque joueur clique sur <strong>sa propre carte</strong>, mémorise
-      son mot en privé, puis appuie sur « Cacher » avant de transmettre l'appareil au suivant.
-      Une carte déjà consultée ne peut pas être rouverte.
-    </p>
-
-    <div id="statusBanner" class="status-banner">
-      Toutes les cartes ont été consultées. La discussion peut commencer.
-    </div>
-
-    <div id="cardsGrid" class="cards-grid" role="list"></div>
-
-    <div class="actions-row">
-      <div class="actions-row__group">
-        <button type="button" id="summaryBtn" class="btn btn--gold" disabled>Voir le bilan</button>
+      <div class="actions-row">
+        <div class="actions-row__group">
+          <button type="button" id="startVoteBtn" class="btn btn--gold" disabled>Lancer le vote</button>
+          <button type="button" id="summaryBtn" class="btn btn--gold summary-btn--hidden">Voir tous les rôles</button>
+        </div>
+        <div class="actions-row__group">
+          <button type="button" id="newRoundBtn" class="btn btn--ghost">Nouvelle manche (mêmes joueurs)</button>
+          <button type="button" id="resetBtn" class="btn btn--ghost">Nouvelle partie</button>
+        </div>
       </div>
-      <div class="actions-row__group">
-        <button type="button" id="newRoundBtn" class="btn btn--ghost">Nouvelle manche (mêmes joueurs)</button>
-        <button type="button" id="resetBtn" class="btn btn--ghost">Nouvelle partie</button>
+    </section>
+
+  </div>
+
+  <div id="wordModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalOwner" aria-hidden="true">
+    <div class="modal__scrim"></div>
+    <div class="modal__panel">
+      <div class="modal__stamp">confidentiel</div>
+      <div class="modal__owner" id="modalOwner">Carte de —</div>
+      <div class="modal__role" id="modalRole">Civil</div>
+      <div class="modal__word-label">Ton mot</div>
+      <div class="modal__word" id="modalWord">—</div>
+      <div class="modal__badges" id="modalBadges"></div>
+      <p class="modal__privacy">Assure-toi que personne d'autre ne regarde l'écran avant de continuer.</p>
+      <div class="modal__buttons">
+        <button type="button" id="hideWordBtn" class="btn btn--primary">Cacher &amp; passer au suivant</button>
       </div>
-    </div>
-  </section>
-
-</div>
-
-<!-- ============ MODAL: reveal word ============ -->
-<div id="wordModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalOwner" aria-hidden="true">
-  <div class="modal__scrim"></div>
-  <div class="modal__panel">
-    <div class="modal__stamp">confidentiel</div>
-    <div class="modal__owner" id="modalOwner">Carte de —</div>
-    <div class="modal__role" id="modalRole">Civil</div>
-    <div class="modal__word-label">Ton mot</div>
-    <div class="modal__word" id="modalWord">—</div>
-    <p class="modal__privacy">Assure-toi que personne d'autre ne regarde l'écran avant de continuer.</p>
-    <div class="modal__buttons">
-      <button type="button" id="hideWordBtn" class="btn btn--primary">Cacher &amp; passer au suivant</button>
     </div>
   </div>
-</div>
 
-<!-- ============ MODAL: round summary ============ -->
-<div id="summaryModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="summaryTitle" aria-hidden="true">
-  <div class="modal__scrim" id="summaryScrim"></div>
-  <div class="modal__panel summary-panel">
-    <h3 id="summaryTitle">Bilan de la manche</h3>
-    <p class="summary-sub">À révéler une fois la discussion et le vote terminés.</p>
-    <ul class="summary-list" id="summaryList"></ul>
-    <div class="modal__buttons">
-      <button type="button" id="closeSummaryBtn" class="btn btn--ghost">Fermer</button>
-      <button type="button" id="summaryNewRoundBtn" class="btn btn--primary">Nouvelle manche</button>
+  <div id="summaryModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="summaryTitle"
+    aria-hidden="true">
+    <div class="modal__scrim" id="summaryScrim"></div>
+    <div class="modal__panel summary-panel">
+      <h3 id="summaryTitle">Bilan de la manche</h3>
+      <p class="summary-sub">À révéler une fois la discussion et le vote terminés.</p>
+      <ul class="summary-list" id="summaryList"></ul>
+      <div class="modal__buttons">
+        <button type="button" id="closeSummaryBtn" class="btn btn--ghost">Fermer</button>
+        <button type="button" id="summaryNewRoundBtn" class="btn btn--primary">Nouvelle manche</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<div class="visually-hidden" aria-live="polite" id="srAnnounce"></div>
-<script src="script.js"></script>
+  <div id="voteConfirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="voteConfirmTitle"
+    aria-hidden="true">
+    <div class="modal__scrim"></div>
+    <div class="modal__panel">
+      <div class="modal__stamp">vote</div>
+      <div class="modal__owner" id="voteConfirmTitle">Confirmer le vote</div>
+      <div class="modal__word" id="voteConfirmName">—</div>
+      <p class="modal__privacy">Le groupe est d'accord pour éliminer ce joueur ?</p>
+      <div class="modal__buttons">
+        <button type="button" id="voteConfirmCancel" class="btn btn--ghost">Annuler</button>
+        <button type="button" id="voteConfirmYes" class="btn btn--primary">Éliminer</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="eliminationModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="elimName"
+    aria-hidden="true">
+    <div class="modal__scrim"></div>
+    <div class="modal__panel">
+      <div class="modal__stamp">élimination</div>
+      <div class="modal__owner" id="elimName">—</div>
+      <div class="modal__role" id="elimRole">Civil</div>
+      <p class="modal__privacy" id="elimContinueText">La partie continue.</p>
+      <div class="modal__buttons">
+        <button type="button" id="elimContinueBtn" class="btn btn--primary">Continuer</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div class="visually-hidden" aria-live="polite" id="srAnnounce"></div>
+  <script src="script.js"></script>
 </body>
+
 </html>

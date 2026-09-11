@@ -2,52 +2,6 @@
     "use strict";
 
     var WORD_PAIRS = [
-        ["Chat", "Chien"],
-        ["Café", "Thé"],
-        ["Pizza", "Burger"],
-        ["Plage", "Montagne"],
-        ["Été", "Hiver"],
-        ["Voiture", "Moto"],
-        ["Piscine", "Mer"],
-        ["Guitare", "Piano"],
-        ["Médecin", "Infirmier"],
-        ["Lion", "Tigre"],
-        ["Avion", "Train"],
-        ["Pomme", "Poire"],
-        ["Lune", "Soleil"],
-        ["Livre", "Journal"],
-        ["Stylo", "Crayon"],
-        ["Football", "Rugby"],
-        ["Neige", "Pluie"],
-        ["Chocolat", "Vanille"],
-        ["Château", "Maison"],
-        ["Pirate", "Corsaire"],
-        ["Vélo", "Trottinette"],
-        ["Fromage", "Beurre"],
-        ["Whisky", "Vodka"],
-        ["Sushi", "Ramen"],
-        ["Ordinateur", "Tablette"],
-        ["Dentiste", "Chirurgien"],
-        ["Rivière", "Lac"],
-        ["Étoile", "Planète"],
-        ["Pain", "Baguette"],
-        ["Cinéma", "Théâtre"],
-        ["Requin", "Dauphin"],
-        ["Camion", "Bus"],
-        ["Hôtel", "Auberge"],
-        ["Perroquet", "Aigle"],
-        ["Salade", "Soupe"],
-        ["Montre", "Bracelet"],
-        ["Parapluie", "Manteau"],
-        ["Bougie", "Lampe"],
-        ["Sapin", "Palmier"],
-        ["Robot", "Extraterrestre"],
-        ["Policier", "Pompier"],
-        ["Violon", "Violoncelle"],
-        ["Tornade", "Ouragan"],
-
-
-
         ["Delmas", "Louveton"],
         ["UX", "UI"],
         ["Zoning", "Wireframe"],
@@ -89,7 +43,7 @@
         ["Mickey", "Minnie"],
 
 
-        
+
         ["Ryan Gosling", "Ryan Reynolds"],
         ["Tom Holland", "Tom Hanks"],
         ["Tom Cruise", "Tom Felton"],
@@ -171,6 +125,40 @@
         ["Mac", "Windows"],
         ["Burger King", "McDonald's"],
         ["Pacsé", "Marié"],
+        ["Pizza", "Burger"],
+        ["Voiture", "Moto"],
+        ["Piscine", "Mer"],
+        ["Guitare", "Piano"],
+        ["Médecin", "Chirurgien"],
+        ["Avion", "Train"],
+        ["Pomme", "Poire"],
+        ["Lune", "Soleil"],
+        ["Livre", "Journal"],
+        ["Football", "Rugby"],
+        ["Neige", "Pluie"],
+        ["Chocolat Noir", "Chocolat au Lait"],
+        ["Château", "Maison"],
+        ["Vélo", "Trottinette"],
+        ["Whisky", "Vodka"],
+        ["Sushi", "Ramen"],
+        ["Ordinateur", "Tablette"],
+        ["Rivière", "Lac"],
+        ["Étoile", "Planète"],
+        ["Pain de mie", "Baguette"],
+        ["Cinéma", "Théâtre"],
+        ["Requin", "Dauphin"],
+        ["Camion", "Bus"],
+        ["Hôtel", "Auberge"],
+        ["Perroquet", "Aigle"],
+        ["Salade", "Soupe"],
+        ["Montre", "Bracelet"],
+        ["Parapluie", "Manteau"],
+        ["Bougie", "Lampe"],
+        ["Sapin", "Palmier"],
+        ["Robot", "Extraterrestre"],
+        ["Policier", "Pompier"],
+        ["Violon", "Violoncelle"],
+        ["Tornade", "Ouragan"],
 
         ["Amande", "Amende"],
         ["Pause", "Pose"],
@@ -187,13 +175,51 @@
 
     var MIN_PLAYERS = 3;
     var MAX_PLAYERS = 20;
+    var MIN_UNDERCOVER = 1;
+
+    function maxImpostors(playerCount) {
+        return Math.max(MIN_UNDERCOVER, Math.ceil(playerCount / 2) - 1);
+    }
+
+    var ROLE_INFO = {
+        idiot: {
+            label: 'Idiot du village',
+            desc: 'Si tu es éliminé dès le tout premier vote, tu gagnes la partie à toi seul !'
+        },
+        fantome: {
+            label: 'Fantôme',
+            desc: 'Même éliminé, tu pourras continuer à voter aux prochains tours.'
+        },
+        mime: {
+            label: 'Mime',
+            desc: 'Décris ton mot uniquement par gestes, sans jamais parler.'
+        },
+        procureur: {
+            label: 'Procureur',
+            desc: 'En cas d\'égalité au vote, c\'est toi qui trancheras qui est éliminé.'
+        }
+    };
 
     var state = {
         playerCount: 6,
+        undercoverCount: 1,
+        mrWhiteCount: 0,
+        roles: {
+            idiot: false,
+            fantome: false,
+            mime: false,
+            procureur: false,
+            amoureux: false
+        },
         players: [],
         round: 1,
         lastPairIndex: -1,
-        openCardId: null
+        openCardId: null,
+        phase: 'reveal',
+        pendingEliminationId: null,
+        voteCount: 0,
+        winner: null,
+        winnerDetail: ''
     };
 
     var el = {
@@ -202,6 +228,19 @@
         countMinus: document.getElementById('countMinus'),
         countPlus: document.getElementById('countPlus'),
         countDisplay: document.getElementById('countDisplay'),
+        underMinus: document.getElementById('underMinus'),
+        underPlus: document.getElementById('underPlus'),
+        underDisplay: document.getElementById('underDisplay'),
+        underRange: document.getElementById('underRange'),
+        mrwhiteMinus: document.getElementById('mrwhiteMinus'),
+        mrwhitePlus: document.getElementById('mrwhitePlus'),
+        mrwhiteDisplay: document.getElementById('mrwhiteDisplay'),
+        mrwhiteRange: document.getElementById('mrwhiteRange'),
+        roleIdiot: document.getElementById('roleIdiot'),
+        roleFantome: document.getElementById('roleFantome'),
+        roleMime: document.getElementById('roleMime'),
+        roleProcureur: document.getElementById('roleProcureur'),
+        roleAmoureux: document.getElementById('roleAmoureux'),
         namesGrid: document.getElementById('namesGrid'),
         startBtn: document.getElementById('startBtn'),
 
@@ -211,7 +250,17 @@
         totalCount: document.getElementById('totalCount'),
         progressFill: document.getElementById('progressFill'),
         statusBanner: document.getElementById('statusBanner'),
+        tableNote: document.getElementById('tableNote'),
         cardsGrid: document.getElementById('cardsGrid'),
+
+        voteSection: document.getElementById('voteSection'),
+        eliminatedList: document.getElementById('eliminatedList'),
+        voteGrid: document.getElementById('voteGrid'),
+        startVoteBtn: document.getElementById('startVoteBtn'),
+
+        gameOverBanner: document.getElementById('gameOverBanner'),
+        gameOverTitle: document.getElementById('gameOverTitle'),
+        gameOverSub: document.getElementById('gameOverSub'),
 
         summaryBtn: document.getElementById('summaryBtn'),
         newRoundBtn: document.getElementById('newRoundBtn'),
@@ -221,7 +270,19 @@
         modalOwner: document.getElementById('modalOwner'),
         modalRole: document.getElementById('modalRole'),
         modalWord: document.getElementById('modalWord'),
+        modalBadges: document.getElementById('modalBadges'),
         hideWordBtn: document.getElementById('hideWordBtn'),
+
+        voteConfirmModal: document.getElementById('voteConfirmModal'),
+        voteConfirmName: document.getElementById('voteConfirmName'),
+        voteConfirmCancel: document.getElementById('voteConfirmCancel'),
+        voteConfirmYes: document.getElementById('voteConfirmYes'),
+
+        eliminationModal: document.getElementById('eliminationModal'),
+        elimName: document.getElementById('elimName'),
+        elimRole: document.getElementById('elimRole'),
+        elimContinueText: document.getElementById('elimContinueText'),
+        elimContinueBtn: document.getElementById('elimContinueBtn'),
 
         summaryModal: document.getElementById('summaryModal'),
         summaryScrim: document.getElementById('summaryScrim'),
@@ -293,16 +354,79 @@
         el.countPlus.disabled = state.playerCount >= MAX_PLAYERS;
     }
 
+    function clampRoleCounts() {
+        var cap = maxImpostors(state.playerCount);
+        state.undercoverCount = clamp(state.undercoverCount, MIN_UNDERCOVER, cap);
+        state.mrWhiteCount = clamp(state.mrWhiteCount, 0, Math.max(0, cap - state.undercoverCount));
+    }
+
+    function updateUnderCounter() {
+        clampRoleCounts();
+        var cap = maxImpostors(state.playerCount);
+        var underMax = Math.max(MIN_UNDERCOVER, cap - state.mrWhiteCount);
+        var mrwhiteMax = Math.max(0, cap - state.undercoverCount);
+
+        el.underDisplay.textContent = state.undercoverCount;
+        el.underRange.textContent = 'de ' + MIN_UNDERCOVER + ' à ' + underMax;
+        el.underMinus.disabled = state.undercoverCount <= MIN_UNDERCOVER;
+        el.underPlus.disabled = state.undercoverCount >= underMax;
+
+        el.mrwhiteDisplay.textContent = state.mrWhiteCount;
+        el.mrwhiteRange.textContent = 'de 0 à ' + mrwhiteMax;
+        el.mrwhiteMinus.disabled = state.mrWhiteCount <= 0;
+        el.mrwhitePlus.disabled = state.mrWhiteCount >= mrwhiteMax;
+    }
+
     el.countMinus.addEventListener('click', function () {
         state.playerCount = clamp(state.playerCount - 1, MIN_PLAYERS, MAX_PLAYERS);
         updateCounter();
+        updateUnderCounter();
         renderNameFields();
     });
 
     el.countPlus.addEventListener('click', function () {
         state.playerCount = clamp(state.playerCount + 1, MIN_PLAYERS, MAX_PLAYERS);
         updateCounter();
+        updateUnderCounter();
         renderNameFields();
+    });
+
+    el.underMinus.addEventListener('click', function () {
+        state.undercoverCount = clamp(state.undercoverCount - 1, MIN_UNDERCOVER, maxImpostors(state.playerCount));
+        updateUnderCounter();
+    });
+
+    el.underPlus.addEventListener('click', function () {
+        var cap = maxImpostors(state.playerCount);
+        state.undercoverCount = clamp(state.undercoverCount + 1, MIN_UNDERCOVER, Math.max(MIN_UNDERCOVER, cap - state.mrWhiteCount));
+        updateUnderCounter();
+    });
+
+    el.mrwhiteMinus.addEventListener('click', function () {
+        state.mrWhiteCount = clamp(state.mrWhiteCount - 1, 0, maxImpostors(state.playerCount));
+        updateUnderCounter();
+    });
+
+    el.mrwhitePlus.addEventListener('click', function () {
+        var cap = maxImpostors(state.playerCount);
+        state.mrWhiteCount = clamp(state.mrWhiteCount + 1, 0, Math.max(0, cap - state.undercoverCount));
+        updateUnderCounter();
+    });
+
+    el.roleIdiot.addEventListener('change', function () {
+        state.roles.idiot = el.roleIdiot.checked;
+    });
+    el.roleFantome.addEventListener('change', function () {
+        state.roles.fantome = el.roleFantome.checked;
+    });
+    el.roleMime.addEventListener('change', function () {
+        state.roles.mime = el.roleMime.checked;
+    });
+    el.roleProcureur.addEventListener('change', function () {
+        state.roles.procureur = el.roleProcureur.checked;
+    });
+    el.roleAmoureux.addEventListener('change', function () {
+        state.roles.amoureux = el.roleAmoureux.checked;
     });
 
     function pickWordPair() {
@@ -323,14 +447,90 @@
         };
     }
 
+    function shuffle(arr) {
+        var a = arr.slice();
+        for (var j = a.length - 1; j > 0; j--) {
+            var k = randomInt(j + 1);
+            var tmp = a[j];
+            a[j] = a[k];
+            a[k] = tmp;
+        }
+        return a;
+    }
+
+    function getPlayer(id) {
+        return state.players.filter(function (p) {
+            return p.id === id;
+        })[0];
+    }
+
+    function teamOf(player) {
+        return (player.isUndercover || player.isMrWhite) ? 'impostor' : 'civil';
+    }
+
     function assignRoles() {
         var words = pickWordPair();
-        var undercoverIndex = randomInt(state.players.length);
-        state.players.forEach(function (player, i) {
-            player.isUndercover = (i === undercoverIndex);
-            player.word = player.isUndercover ? words.undercoverWord : words.civilWord;
-            player.viewed = false;
+        clampRoleCounts();
+        var total = state.players.length;
+        var cap = maxImpostors(total);
+        var undercoverCount = clamp(state.undercoverCount, MIN_UNDERCOVER, cap);
+        var mrWhiteCount = clamp(state.mrWhiteCount, 0, Math.max(0, cap - undercoverCount));
+
+        var allIds = state.players.map(function (p) {
+            return p.id;
         });
+        var shuffledImpostors = shuffle(allIds).slice(0, undercoverCount + mrWhiteCount);
+        var undercoverIds = {};
+        var mrWhiteIds = {};
+        shuffledImpostors.forEach(function (id, idx) {
+            if (idx < undercoverCount) undercoverIds[id] = true;
+            else mrWhiteIds[id] = true;
+        });
+
+        state.players.forEach(function (player) {
+            player.isUndercover = !!undercoverIds[player.id];
+            player.isMrWhite = !!mrWhiteIds[player.id];
+            player.word = player.isMrWhite ? '' : (player.isUndercover ? words.undercoverWord : words.civilWord);
+            player.viewed = false;
+            player.eliminated = false;
+            player.isIdiot = false;
+            player.isFantome = false;
+            player.isMime = false;
+            player.isProcureur = false;
+            player.loverId = null;
+        });
+
+        if (state.roles.idiot) {
+            var civilIds = state.players.filter(function (p) {
+                    return !p.isUndercover && !p.isMrWhite;
+                })
+                .map(function (p) {
+                    return p.id;
+                });
+            if (civilIds.length) {
+                getPlayer(shuffle(civilIds)[0]).isIdiot = true;
+            }
+        }
+        if (state.roles.fantome) {
+            getPlayer(shuffle(allIds)[0]).isFantome = true;
+        }
+        if (state.roles.mime) {
+            getPlayer(shuffle(allIds)[0]).isMime = true;
+        }
+        if (state.roles.procureur) {
+            getPlayer(shuffle(allIds)[0]).isProcureur = true;
+        }
+        if (state.roles.amoureux && allIds.length >= 2) {
+            var pair = shuffle(allIds).slice(0, 2);
+            getPlayer(pair[0]).loverId = pair[1];
+            getPlayer(pair[1]).loverId = pair[0];
+        }
+
+        state.phase = 'reveal';
+        state.pendingEliminationId = null;
+        state.voteCount = 0;
+        state.winner = null;
+        state.winnerDetail = '';
     }
 
     function collectNames() {
@@ -350,8 +550,15 @@
                 id: i,
                 name: name,
                 isUndercover: false,
+                isMrWhite: false,
                 word: '',
-                viewed: false
+                viewed: false,
+                eliminated: false,
+                isIdiot: false,
+                isFantome: false,
+                isMime: false,
+                isProcureur: false,
+                loverId: null
             };
         });
         state.round = 1;
@@ -360,9 +567,21 @@
         switchToGameScreen();
     }
 
+    function resetStageUI() {
+        el.tableNote.style.display = '';
+        el.cardsGrid.style.display = '';
+        el.statusBanner.classList.remove('status-banner--show');
+        el.voteSection.classList.remove('vote-section--active');
+        el.gameOverBanner.classList.remove('game-over-banner--active', 'game-over-banner--civils', 'game-over-banner--undercover');
+        el.startVoteBtn.style.display = '';
+        el.startVoteBtn.disabled = true;
+        el.summaryBtn.classList.add('summary-btn--hidden');
+    }
+
     function switchToGameScreen() {
         el.setupScreen.classList.remove('screen--active');
         el.gameScreen.classList.add('screen--active');
+        resetStageUI();
         renderGameHeader();
         renderCards();
     }
@@ -391,8 +610,10 @@
         el.progressFill.style.width = (total ? (viewed / total * 100) : 0) + '%';
 
         var allViewed = total > 0 && viewed === total;
-        el.summaryBtn.disabled = !allViewed;
-        el.statusBanner.classList.toggle('status-banner--show', allViewed);
+        if (state.phase === 'reveal') {
+            el.startVoteBtn.disabled = !allViewed;
+        }
+        el.statusBanner.classList.toggle('status-banner--show', allViewed && state.phase === 'reveal');
     }
 
     var CARD_ICON = '<svg class="card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">' +
@@ -452,23 +673,61 @@
     }
 
     function openCard(id) {
-        var player = state.players.filter(function (p) {
-            return p.id === id;
-        })[0];
+        var player = getPlayer(id);
         if (!player || player.viewed) return;
 
         state.openCardId = id;
         el.modalOwner.textContent = 'Carte de ' + player.name;
-        el.modalRole.textContent = player.isUndercover ?
-            'Tu es l\'Undercover — fonds-toi dans la masse' :
-            'Tu es Civil — retrouve l\'imposteur';
-        el.modalWord.textContent = player.word;
+
+        if (player.isMrWhite) {
+            el.modalRole.textContent = 'Tu es Mr. White — improvise, tu n\'as pas de mot !';
+            el.modalWord.textContent = 'Aucun mot';
+        } else if (player.isUndercover) {
+            el.modalRole.textContent = 'Tu es l\'Undercover — fonds-toi dans la masse';
+            el.modalWord.textContent = player.word;
+        } else {
+            el.modalRole.textContent = 'Tu es Civil — retrouve l\'imposteur';
+            el.modalWord.textContent = player.word;
+        }
+
+        renderModalBadges(player);
 
         el.wordModal.classList.add('modal--open');
         el.wordModal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
         el.hideWordBtn.focus();
         announce('Mot révélé pour ' + player.name);
+    }
+
+    function renderModalBadges(player) {
+        el.modalBadges.innerHTML = '';
+        var badges = [];
+        if (player.isIdiot) badges.push(ROLE_INFO.idiot);
+        if (player.isFantome) badges.push(ROLE_INFO.fantome);
+        if (player.isMime) badges.push(ROLE_INFO.mime);
+        if (player.isProcureur) badges.push(ROLE_INFO.procureur);
+        if (player.loverId !== null) {
+            var lover = getPlayer(player.loverId);
+            if (lover) {
+                var sameTeam = teamOf(player) === teamOf(lover);
+                badges.push({
+                    label: 'Amoureux de ' + lover.name,
+                    desc: sameTeam ?
+                        'Si l\'un de vous deux est éliminé, l\'autre l\'est aussi.' : 'Vous n\'êtes pas dans le même camp : si l\'un est éliminé, l\'autre l\'est aussi, et vous devez gagner ensemble, seuls contre tous.'
+                });
+            }
+        }
+        badges.forEach(function (b) {
+            var div = document.createElement('div');
+            div.className = 'modal__badge';
+            var strong = document.createElement('strong');
+            strong.textContent = b.label;
+            var span = document.createElement('span');
+            span.textContent = b.desc;
+            div.appendChild(strong);
+            div.appendChild(span);
+            el.modalBadges.appendChild(div);
+        });
     }
 
     function hideOpenCard() {
@@ -500,29 +759,292 @@
 
     el.hideWordBtn.addEventListener('click', hideOpenCard);
 
+    function alivePlayers() {
+        return state.players.filter(function (p) {
+            return !p.eliminated;
+        });
+    }
+
+    function enterVotePhase() {
+        state.phase = 'vote';
+        el.tableNote.style.display = 'none';
+        el.cardsGrid.style.display = 'none';
+        el.statusBanner.classList.remove('status-banner--show');
+        el.startVoteBtn.style.display = 'none';
+        el.voteSection.classList.add('vote-section--active');
+        renderEliminatedList();
+        renderVoteGrid();
+        announce('Phase de vote lancée.');
+    }
+
+    el.startVoteBtn.addEventListener('click', function () {
+        if (el.startVoteBtn.disabled) return;
+        enterVotePhase();
+    });
+
+    function renderEliminatedList() {
+        el.eliminatedList.innerHTML = '';
+        state.players.filter(function (p) {
+            return p.eliminated;
+        }).forEach(function (player) {
+            var chip = document.createElement('span');
+            chip.className = 'eliminated-chip';
+            chip.innerHTML = player.name + ' <span class="eliminated-chip__role">' +
+                (player.isUndercover ? 'Undercover' : 'Civil') + '</span>';
+            el.eliminatedList.appendChild(chip);
+        });
+    }
+
+    function renderVoteGrid() {
+        el.voteGrid.innerHTML = '';
+        alivePlayers().forEach(function (player) {
+            var card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'card';
+            card.style.setProperty('--rot', cardRotation(player.id));
+            card.setAttribute('role', 'listitem');
+            card.setAttribute('data-id', player.id);
+            card.setAttribute('aria-label', 'Voter pour éliminer ' + player.name);
+
+            var indexEl = document.createElement('span');
+            indexEl.className = 'card__index';
+            indexEl.textContent = '#' + (player.id + 1);
+
+            var iconWrap = document.createElement('span');
+            iconWrap.innerHTML = CARD_ICON;
+
+            var nameEl = document.createElement('span');
+            nameEl.className = 'card__name';
+            nameEl.textContent = player.name;
+
+            card.appendChild(indexEl);
+            card.appendChild(iconWrap);
+            card.appendChild(nameEl);
+
+            card.addEventListener('click', function () {
+                openVoteConfirm(player.id);
+            });
+
+            el.voteGrid.appendChild(card);
+        });
+    }
+
+    function openVoteConfirm(id) {
+        var player = getPlayer(id);
+        if (!player) return;
+        state.pendingEliminationId = id;
+        el.voteConfirmName.textContent = player.name;
+        el.voteConfirmModal.classList.add('modal--open');
+        el.voteConfirmModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        el.voteConfirmYes.focus();
+    }
+
+    function closeVoteConfirm() {
+        el.voteConfirmModal.classList.remove('modal--open');
+        el.voteConfirmModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        state.pendingEliminationId = null;
+    }
+
+    el.voteConfirmCancel.addEventListener('click', closeVoteConfirm);
+
+    el.voteConfirmYes.addEventListener('click', function () {
+        var id = state.pendingEliminationId;
+        if (id === null) return;
+        closeVoteConfirm();
+        performElimination(id);
+    });
+
+    function roleLabel(player) {
+        if (player.isMrWhite) return player.name + ' était Mr. White';
+        if (player.isUndercover) return player.name + ' était l\'Undercover';
+        return player.name + ' était Civil';
+    }
+
+    function performElimination(id) {
+        var player = getPlayer(id);
+        if (!player) return;
+
+        state.voteCount += 1;
+
+        var eliminatedNow = [player];
+        player.eliminated = true;
+
+        if (player.loverId !== null) {
+            var lover = getPlayer(player.loverId);
+            if (lover && !lover.eliminated) {
+                lover.eliminated = true;
+                eliminatedNow.push(lover);
+            }
+        }
+
+        var winner = null;
+        var winnerDetail = '';
+
+        var idiotEliminated = eliminatedNow.filter(function (p) {
+            return p.isIdiot;
+        })[0];
+        if (state.voteCount === 1 && idiotEliminated) {
+            winner = 'idiot';
+            winnerDetail = idiotEliminated.name;
+        } else {
+            var loverSurvivor = state.players.filter(function (p) {
+                if (p.eliminated || p.loverId === null) return false;
+                var partner = getPlayer(p.loverId);
+                return partner && !partner.eliminated && teamOf(p) !== teamOf(partner);
+            })[0];
+
+            if (loverSurvivor) {
+                var others = state.players.filter(function (p) {
+                    return p.id !== loverSurvivor.id && p.id !== loverSurvivor.loverId;
+                });
+                if (others.length && others.every(function (p) {
+                        return p.eliminated;
+                    })) {
+                    winner = 'amoureux';
+                }
+            }
+
+            if (!winner) {
+                var aliveImpostor = state.players.filter(function (p) {
+                    return !p.eliminated && (p.isUndercover || p.isMrWhite);
+                }).length;
+                var aliveCivil = state.players.filter(function (p) {
+                    return !p.eliminated && !(p.isUndercover || p.isMrWhite);
+                }).length;
+                if (aliveImpostor === 0) winner = 'civils';
+                else if (aliveCivil === 0) winner = 'undercover';
+            }
+        }
+
+        state.winner = winner;
+        state.winnerDetail = winnerDetail;
+
+        var namesText = eliminatedNow.map(function (p) {
+            return p.name;
+        }).join(' et ');
+        el.elimName.textContent = namesText + (eliminatedNow.length > 1 ? ' ont été éliminés' : ' a été éliminé(e)');
+        el.elimRole.innerHTML = eliminatedNow.map(roleLabel).join('<br>');
+
+        if (winner === 'civils') {
+            el.elimContinueText.textContent = 'Tous les Undercovers et Mr. White ont été démasqués !';
+            el.elimContinueBtn.textContent = 'Voir le résultat';
+        } else if (winner === 'undercover') {
+            el.elimContinueText.textContent = 'Il ne reste plus aucun Civil !';
+            el.elimContinueBtn.textContent = 'Voir le résultat';
+        } else if (winner === 'idiot') {
+            el.elimContinueText.textContent = winnerDetail + ' était l\'Idiot du village et remporte la partie dès le premier vote !';
+            el.elimContinueBtn.textContent = 'Voir le résultat';
+        } else if (winner === 'amoureux') {
+            el.elimContinueText.textContent = 'Les Amoureux, dans des camps différents, sont les seuls survivants !';
+            el.elimContinueBtn.textContent = 'Voir le résultat';
+        } else {
+            el.elimContinueText.textContent = 'La partie continue — au prochain vote.';
+            el.elimContinueBtn.textContent = 'Continuer';
+        }
+
+        el.eliminationModal.classList.add('modal--open');
+        el.eliminationModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        el.elimContinueBtn.focus();
+        announce(el.elimName.textContent);
+    }
+
+    function closeEliminationModal() {
+        el.eliminationModal.classList.remove('modal--open');
+        el.eliminationModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    el.elimContinueBtn.addEventListener('click', function () {
+        closeEliminationModal();
+        if (state.winner) {
+            enterGameOver(state.winner);
+        } else {
+            renderEliminatedList();
+            renderVoteGrid();
+        }
+    });
+
+    function enterGameOver(winner) {
+        state.phase = 'gameover';
+        el.voteSection.classList.remove('vote-section--active');
+        el.startVoteBtn.style.display = 'none';
+        el.summaryBtn.classList.remove('summary-btn--hidden');
+
+        var impostorPlural = state.players.filter(function (p) {
+            return p.isUndercover || p.isMrWhite;
+        }).length > 1;
+
+        if (winner === 'civils') {
+            el.gameOverTitle.textContent = 'Les Civils ont gagné !';
+            el.gameOverSub.textContent = impostorPlural ?
+                'Tous les imposteurs ont été démasqués et éliminés.' :
+                'L\'imposteur a été démasqué et éliminé.';
+            el.gameOverBanner.classList.add('game-over-banner--civils');
+        } else if (winner === 'undercover') {
+            el.gameOverTitle.textContent = impostorPlural ? 'Les Undercovers ont gagné !' : 'L\'Undercover a gagné !';
+            el.gameOverSub.textContent = 'Tous les Civils ont été éliminés avant d\'avoir démasqué l\'imposteur.';
+            el.gameOverBanner.classList.add('game-over-banner--undercover');
+        } else if (winner === 'idiot') {
+            el.gameOverTitle.textContent = 'L\'Idiot du village a gagné !';
+            el.gameOverSub.textContent = state.winnerDetail + ' a été éliminé(e) dès le tout premier vote et remporte la partie à lui/elle seul(e) !';
+            el.gameOverBanner.classList.add('game-over-banner--idiot');
+        } else if (winner === 'amoureux') {
+            el.gameOverTitle.textContent = 'Les Amoureux ont gagné !';
+            el.gameOverSub.textContent = 'Ils n\'étaient pas dans le même camp, mais ont survécu à tous les autres joueurs !';
+            el.gameOverBanner.classList.add('game-over-banner--amoureux');
+        }
+
+        el.gameOverBanner.classList.add('game-over-banner--active');
+        announce(el.gameOverTitle.textContent);
+    }
+
     function openSummary() {
         el.summaryList.innerHTML = '';
         state.players.forEach(function (player) {
             var li = document.createElement('li');
 
             var nameSpan = document.createElement('strong');
-            nameSpan.textContent = player.name;
+            nameSpan.textContent = player.name + (player.eliminated ? ' (éliminé)' : '');
 
             var right = document.createElement('span');
             right.style.display = 'flex';
             right.style.alignItems = 'center';
-            right.style.gap = '8px';
+            right.style.flexWrap = 'wrap';
+            right.style.gap = '6px';
 
             var wordSpan = document.createElement('span');
-            wordSpan.textContent = player.word;
+            wordSpan.textContent = player.isMrWhite ? 'Aucun mot' : player.word;
             wordSpan.style.color = 'var(--ink-soft)';
+            right.appendChild(wordSpan);
 
             var roleSpan = document.createElement('span');
-            roleSpan.className = 'summary-role ' + (player.isUndercover ? 'summary-role--undercover' : 'summary-role--civil');
-            roleSpan.textContent = player.isUndercover ? 'Undercover' : 'Civil';
-
-            right.appendChild(wordSpan);
+            if (player.isMrWhite) {
+                roleSpan.className = 'summary-role summary-role--undercover';
+                roleSpan.textContent = 'Mr. White';
+            } else if (player.isUndercover) {
+                roleSpan.className = 'summary-role summary-role--undercover';
+                roleSpan.textContent = 'Undercover';
+            } else {
+                roleSpan.className = 'summary-role summary-role--civil';
+                roleSpan.textContent = 'Civil';
+            }
             right.appendChild(roleSpan);
+
+            var specials = [];
+            if (player.isIdiot) specials.push('Idiot du village');
+            if (player.isFantome) specials.push('Fantôme');
+            if (player.isMime) specials.push('Mime');
+            if (player.isProcureur) specials.push('Procureur');
+            if (player.loverId !== null) specials.push('Amoureux');
+            specials.forEach(function (label) {
+                var specialSpan = document.createElement('span');
+                specialSpan.className = 'summary-role summary-role--special';
+                specialSpan.textContent = label;
+                right.appendChild(specialSpan);
+            });
 
             li.appendChild(nameSpan);
             li.appendChild(right);
@@ -549,6 +1071,7 @@
         closeSummary();
         state.round += 1;
         assignRoles();
+        resetStageUI();
         renderGameHeader();
         renderCards();
         showToast('Nouvelle manche lancée — de nouveaux mots ont été distribués.');
@@ -560,10 +1083,14 @@
     el.resetBtn.addEventListener('click', function () {
         state.players = [];
         state.round = 1;
+        state.phase = 'reveal';
+        state.winner = null;
+        state.pendingEliminationId = null;
         el.gameScreen.classList.remove('screen--active');
         el.setupScreen.classList.add('screen--active');
     });
 
     updateCounter();
+    updateUnderCounter();
     renderNameFields();
 })();
