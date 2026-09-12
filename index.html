@@ -24,101 +24,141 @@
 
     <section id="setup" class="screen screen--active" aria-labelledby="setup-title">
       <div class="dossier">
-        <h2 id="setup-title" style="font-size:1.5rem; margin-bottom:6px;">Nouvelle manche</h2>
-        <p class="dossier__lead">
+        <div class="dossier__intro">
+          <h2 id="setup-title">Nouvelle manche</h2>
+          <button type="button" id="rulesToggle" class="rules-toggle" aria-expanded="false" aria-controls="rulesText">
+            Comment jouer<span class="rules-toggle__chevron" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="dossier__lead" id="rulesText" hidden>
           Chaque joueur reçoit un mot en secret. Tous les civils reçoivent le même mot ;
           l'Undercover reçoit un mot différent, mais proche. À vous de démasquer l'imposteur
           avant qu'il ne devine votre mot.
         </p>
 
-        <div class="field-row">
-          <h2>Joueurs</h2>
-          <div class="counter">
-            <button type="button" id="countMinus" aria-label="Retirer un joueur">−</button>
-            <div class="counter__value"><span id="countDisplay">6</span><small>de 3 à 20</small></div>
-            <button type="button" id="countPlus" aria-label="Ajouter un joueur">+</button>
+        <div class="setup-block setup-block--flat">
+          <div class="setup-block__head setup-block__head--static">
+            <span class="setup-block__num">1</span>
+            <h2>Joueurs &amp; Undercover</h2>
           </div>
-        </div>
-
-        <div class="field-row">
-          <h2>Undercover</h2>
-          <div class="counter">
-            <button type="button" id="underMinus" aria-label="Retirer un Undercover">−</button>
-            <div class="counter__value"><span id="underDisplay">1</span><small id="underRange">de 1 à 2</small></div>
-            <button type="button" id="underPlus" aria-label="Ajouter un Undercover">+</button>
-          </div>
-        </div>
-
-        <div class="special-roles">
-          <h2 class="special-roles__title">Thèmes des mots</h2>
-          <p class="hint-text hint-text--role">Sélectionnez un ou plusieurs thèmes : les mots seront piochés parmi
-            ceux-ci. Une paire ne revient jamais tant que tout le stock du thème choisi n'a pas été utilisé.</p>
-          <div id="themesGrid" class="toggle-list"></div>
-        </div>
-
-        <div class="special-roles">
-          <h2 class="special-roles__title">Rôles spéciaux <small>(optionnel)</small></h2>
-
-          <div class="field-row field-row--tight">
-            <h2>Mr. White</h2>
-            <div class="counter">
-              <button type="button" id="mrwhiteMinus" aria-label="Retirer un Mr. White">−</button>
-              <div class="counter__value"><span id="mrwhiteDisplay">0</span><small id="mrwhiteRange">de 0 à 1</small>
+          <div class="counters-row">
+            <div class="counter-field">
+              <span class="counter-field__label">Joueurs</span>
+              <div class="counter">
+                <button type="button" id="countMinus" aria-label="Retirer un joueur">−</button>
+                <div class="counter__value"><span id="countDisplay">6</span><small>de 3 à 20</small></div>
+                <button type="button" id="countPlus" aria-label="Ajouter un joueur">+</button>
               </div>
-              <button type="button" id="mrwhitePlus" aria-label="Ajouter un Mr. White">+</button>
+            </div>
+            <div class="counter-field">
+              <span class="counter-field__label">Undercover</span>
+              <div class="counter">
+                <button type="button" id="underMinus" aria-label="Retirer un Undercover">−</button>
+                <div class="counter__value"><span id="underDisplay">1</span><small id="underRange">de 1 à 2</small>
+                </div>
+                <button type="button" id="underPlus" aria-label="Ajouter un Undercover">+</button>
+              </div>
             </div>
           </div>
-          <p class="hint-text hint-text--role">Ne reçoit aucun mot : il doit improviser pour ne pas se faire repérer.
-          </p>
-
-          <p class="hint-text hint-text--role">Un joueur ne peut recevoir qu'un seul rôle spécial ci-dessous. Être
-            Undercover ou Mr. White ne compte pas dans cette limite.</p>
-
-          <div class="toggle-list">
-            <label class="toggle-item">
-              <input type="checkbox" id="roleIdiot">
-              <span>
-                <strong>Idiot du village</strong>
-                <small>Gagne seul s'il est éliminé dès le tout premier vote.</small>
-              </span>
-            </label>
-            <label class="toggle-item">
-              <input type="checkbox" id="roleFantome">
-              <span>
-                <strong>Fantôme</strong>
-                <small>Peut continuer à voter même après avoir été éliminé.</small>
-              </span>
-            </label>
-            <label class="toggle-item">
-              <input type="checkbox" id="roleMime">
-              <span>
-                <strong>Mime</strong>
-                <small>Doit décrire son mot uniquement par gestes, sans parler.</small>
-              </span>
-            </label>
-            <label class="toggle-item">
-              <input type="checkbox" id="roleProcureur">
-              <span>
-                <strong>Procureur</strong>
-                <small>Tranche lui-même en cas d'égalité au vote.</small>
-              </span>
-            </label>
-            <label class="toggle-item">
-              <input type="checkbox" id="roleAmoureux">
-              <span>
-                <strong>Les Amoureux</strong>
-                <small>Liés à un autre joueur : si l'un est éliminé, l'autre l'est aussi. Ils doivent être les deux
-                  derniers survivants pour gagner ensemble, peu importe leurs camps.</small>
-              </span>
-            </label>
-          </div>
         </div>
 
-        <div id="namesGrid" class="names-grid"></div>
+        <details class="setup-block" id="themesBlock" open>
+          <summary class="setup-block__head">
+            <span class="setup-block__num">2</span>
+            <h2>Thèmes des mots</h2>
+            <span class="setup-block__summary" id="themesSummary">1 thème sélectionné</span>
+            <span class="setup-block__chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="setup-block__body">
+            <p class="hint-text hint-text--role">Sélectionnez un ou plusieurs thèmes : les mots seront piochés parmi
+              ceux-ci. Une paire ne revient jamais tant que tout le stock du thème choisi n'a pas été utilisé.</p>
+            <div id="themesGrid" class="toggle-list toggle-list--compact"></div>
+          </div>
+        </details>
+
+        <details class="setup-block" id="rolesBlock">
+          <summary class="setup-block__head">
+            <span class="setup-block__num">3</span>
+            <h2>Rôles spéciaux</h2>
+            <span class="setup-block__summary" id="rolesSummary">Aucun rôle activé</span>
+            <span class="setup-block__chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="setup-block__body">
+            <div class="field-row field-row--tight">
+              <h3>Mr. White</h3>
+              <div class="counter">
+                <button type="button" id="mrwhiteMinus" aria-label="Retirer un Mr. White">−</button>
+                <div class="counter__value"><span id="mrwhiteDisplay">0</span><small id="mrwhiteRange">de 0 à
+                    1</small>
+                </div>
+                <button type="button" id="mrwhitePlus" aria-label="Ajouter un Mr. White">+</button>
+              </div>
+            </div>
+            <p class="hint-text hint-text--role">Ne reçoit aucun mot : il doit improviser pour ne pas se faire
+              repérer.
+            </p>
+
+            <p class="hint-text hint-text--role">Un joueur ne peut recevoir qu'un seul rôle spécial ci-dessous. Être
+              Undercover ou Mr. White ne compte pas dans cette limite.</p>
+
+            <div class="toggle-list">
+              <label class="toggle-item">
+                <input type="checkbox" id="roleIdiot">
+                <span>
+                  <strong>Idiot du village</strong>
+                  <small>Gagne seul s'il est éliminé dès le tout premier vote.</small>
+                </span>
+              </label>
+              <label class="toggle-item">
+                <input type="checkbox" id="roleFantome">
+                <span>
+                  <strong>Fantôme</strong>
+                  <small>Peut continuer à voter même après avoir été éliminé.</small>
+                </span>
+              </label>
+              <label class="toggle-item">
+                <input type="checkbox" id="roleMime">
+                <span>
+                  <strong>Mime</strong>
+                  <small>Doit décrire son mot uniquement par gestes, sans parler.</small>
+                </span>
+              </label>
+              <label class="toggle-item">
+                <input type="checkbox" id="roleProcureur">
+                <span>
+                  <strong>Procureur</strong>
+                  <small>Tranche lui-même en cas d'égalité au vote.</small>
+                </span>
+              </label>
+              <label class="toggle-item">
+                <input type="checkbox" id="roleAmoureux">
+                <span>
+                  <strong>Les Amoureux</strong>
+                  <small>Liés à un autre joueur : si l'un est éliminé, l'autre l'est aussi. Ils doivent être les deux
+                    derniers survivants pour gagner ensemble, peu importe leurs camps.</small>
+                </span>
+              </label>
+            </div>
+          </div>
+        </details>
+
+        <details class="setup-block" id="namesBlock">
+          <summary class="setup-block__head">
+            <span class="setup-block__num">4</span>
+            <h2>Noms des joueurs</h2>
+            <span class="setup-block__summary">Optionnel</span>
+            <span class="setup-block__chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="setup-block__body">
+            <p class="hint-text">Laissez un champ vide pour garder le nom par défaut "Joueur".</p>
+            <div id="namesGrid" class="names-grid"></div>
+          </div>
+        </details>
+
+        <div class="setup-recap" id="setupRecap"></div>
 
         <div class="dossier__footer">
-          <p class="hint-text">Laissez un champ vide pour garder le nom par défaut ("Joueur n").</p>
-          <button type="button" id="startBtn" class="btn btn--primary">Lancer la manche</button>
+          <button type="button" id="startBtn" class="btn btn--primary btn--block">Lancer la manche</button>
         </div>
       </div>
     </section>

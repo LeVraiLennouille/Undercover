@@ -316,6 +316,11 @@
         themesGrid: document.getElementById('themesGrid'),
         namesGrid: document.getElementById('namesGrid'),
         startBtn: document.getElementById('startBtn'),
+        rulesToggle: document.getElementById('rulesToggle'),
+        rulesText: document.getElementById('rulesText'),
+        themesSummary: document.getElementById('themesSummary'),
+        rolesSummary: document.getElementById('rolesSummary'),
+        setupRecap: document.getElementById('setupRecap'),
 
         roundNumber: document.getElementById('roundNumber'),
         playerCountLabel: document.getElementById('playerCountLabel'),
@@ -425,6 +430,7 @@
         el.countDisplay.textContent = state.playerCount;
         el.countMinus.disabled = state.playerCount <= MIN_PLAYERS;
         el.countPlus.disabled = state.playerCount >= MAX_PLAYERS;
+        renderSetupRecap();
     }
 
     function clampRoleCounts() {
@@ -448,6 +454,8 @@
         el.mrwhiteRange.textContent = 'de 0 à ' + mrwhiteMax;
         el.mrwhiteMinus.disabled = state.mrWhiteCount <= 0;
         el.mrwhitePlus.disabled = state.mrWhiteCount >= mrwhiteMax;
+
+        renderRolesSummary();
     }
 
     el.countMinus.addEventListener('click', function () {
@@ -488,18 +496,23 @@
 
     el.roleIdiot.addEventListener('change', function () {
         state.roles.idiot = el.roleIdiot.checked;
+        renderRolesSummary();
     });
     el.roleFantome.addEventListener('change', function () {
         state.roles.fantome = el.roleFantome.checked;
+        renderRolesSummary();
     });
     el.roleMime.addEventListener('change', function () {
         state.roles.mime = el.roleMime.checked;
+        renderRolesSummary();
     });
     el.roleProcureur.addEventListener('change', function () {
         state.roles.procureur = el.roleProcureur.checked;
+        renderRolesSummary();
     });
     el.roleAmoureux.addEventListener('change', function () {
         state.roles.amoureux = el.roleAmoureux.checked;
+        renderRolesSummary();
     });
 
     function renderThemeToggles() {
@@ -514,19 +527,83 @@
             input.checked = !!state.selectedThemes[theme.key];
             input.addEventListener('change', function () {
                 state.selectedThemes[theme.key] = input.checked;
+                renderThemesSummary();
             });
 
             var span = document.createElement('span');
+
+            var titleRow = document.createElement('span');
+            titleRow.className = 'toggle-item__title-row';
             var strong = document.createElement('strong');
             strong.textContent = theme.label;
+            var count = document.createElement('span');
+            count.className = 'toggle-item__count';
+            count.textContent = theme.pairs.length + ' paires';
+            titleRow.appendChild(strong);
+            titleRow.appendChild(count);
+
             var small = document.createElement('small');
-            small.textContent = theme.desc + ' — ' + theme.pairs.length + ' paires';
-            span.appendChild(strong);
+            small.textContent = theme.desc;
+
+            span.appendChild(titleRow);
             span.appendChild(small);
 
             label.appendChild(input);
             label.appendChild(span);
             el.themesGrid.appendChild(label);
+        });
+        renderThemesSummary();
+    }
+
+    function renderThemesSummary() {
+        if (el.themesSummary) {
+            var n = selectedThemeKeys().length;
+            el.themesSummary.textContent = n === 0 ?
+                'Aucun thème sélectionné' :
+                (n + (n > 1 ? ' thèmes sélectionnés' : ' thème sélectionné'));
+        }
+        renderSetupRecap();
+    }
+
+    function renderRolesSummary() {
+        if (el.rolesSummary) {
+            var parts = [];
+            if (state.mrWhiteCount > 0) parts.push(state.mrWhiteCount + ' Mr. White');
+            var labels = [];
+            if (state.roles.idiot) labels.push('Idiot du village');
+            if (state.roles.fantome) labels.push('Fantôme');
+            if (state.roles.mime) labels.push('Mime');
+            if (state.roles.procureur) labels.push('Procureur');
+            if (state.roles.amoureux) labels.push('Amoureux');
+            if (labels.length) parts.push(labels.join(', '));
+            el.rolesSummary.textContent = parts.length ? parts.join(' + ') : 'Aucun rôle activé';
+        }
+        renderSetupRecap();
+    }
+
+    function renderSetupRecap() {
+        if (!el.setupRecap) return;
+        var chips = [];
+        chips.push(state.playerCount + ' joueurs');
+        chips.push(state.undercoverCount + (state.undercoverCount > 1 ? ' Undercovers' : ' Undercover'));
+        if (state.mrWhiteCount > 0) chips.push(state.mrWhiteCount + ' Mr. White');
+
+        var themeCount = selectedThemeKeys().length;
+        chips.push(themeCount ? (themeCount + (themeCount > 1 ? ' thèmes' : ' thème')) : 'aucun thème');
+
+        var specialCount = Object.keys(state.roles).filter(function (k) {
+            return state.roles[k];
+        }).length;
+        if (specialCount) {
+            chips.push(specialCount + (specialCount > 1 ? ' rôles spéciaux' : ' rôle spécial'));
+        }
+
+        el.setupRecap.innerHTML = '';
+        chips.forEach(function (text) {
+            var chip = document.createElement('span');
+            chip.className = 'recap-chip';
+            chip.textContent = text;
+            el.setupRecap.appendChild(chip);
         });
     }
 
@@ -1269,8 +1346,17 @@
         el.setupScreen.classList.add('screen--active');
     });
 
+    if (el.rulesToggle && el.rulesText) {
+        el.rulesToggle.addEventListener('click', function () {
+            var expanded = el.rulesToggle.getAttribute('aria-expanded') === 'true';
+            el.rulesToggle.setAttribute('aria-expanded', String(!expanded));
+            el.rulesText.hidden = expanded;
+        });
+    }
+
     updateCounter();
     updateUnderCounter();
     renderThemeToggles();
     renderNameFields();
+    renderSetupRecap();
 })();
