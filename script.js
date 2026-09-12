@@ -1,177 +1,247 @@
 (function () {
     "use strict";
 
-    var WORD_PAIRS = [
-        ["Delmas", "Louveton"],
-        ["UX", "UI"],
-        ["Zoning", "Wireframe"],
-        ["Maquette", "Prototype"],
-        ["Illustrator", "Photoshop"],
-        ["Accessibilité", "Ergonomie"],
-        ["Serif", "Sans-serif"],
-        ["Montserrat", "Times New Roman"],
-        ["WebP", "AVIF"],
-        ["Header", "Footer"],
-        ["Bouton", "Lien"],
-        ["CDI", "CDD"],
-        ["Freelance", "Chômeur"],
-        ["Tinder", "LinkedIn"],
-        ["Instagram", "TikTok"],
-
-        ["Ferrari", "Lamborghini"],
-        ["Peugeot", "Renault"],
-        ["F1", "Karting"],
-        ["Lewis Hamilton", "Michael Schumacher"],
-        ["Ayrton Senna", "Alain Prost"],
-        ["Chauffeur", "Pilote"],
-        ["Pneu", "Roue"],
-        ["Accélérer", "Freiner"],
-        ["Chronomètre", "Montre"],
-        ["Pneu", "Roue"],
-
-        ["Flash", "Flash McQueen"],
-        ["Batman", "Ironman"],
-        ["Hulk", "RedHulk"],
-        ["Woody", "Buzz l'Eclair"],
-        ["John Wick", "Tyler Rake"],
-        ["Terminator", "Robocop"],
-        ["Godzilla", "King Kong"],
-        ["Agent 47", "Jason Bourne"],
-        ["Cendrillon", "Blanche-Neige"],
-        ["Lilo", "Stitch"],
-        ["Belle", "Bête"],
-        ["Mickey", "Minnie"],
-
-
-
-        ["Ryan Gosling", "Ryan Reynolds"],
-        ["Tom Holland", "Tom Hanks"],
-        ["Tom Cruise", "Tom Felton"],
-        ["Chris Hemsworth", "Chris Evans"],
-        ["Emma Stone", "Emma Watson"],
-        ["Will Smith", "Will Ferrell"],
-        ["Jennifer Lawrence", "Jennifer Lopez"],
-        ["James Cameron", "James Wan"],
-        ["Emma Stone", "Emma Thompson"],
-        ["Kevin Bacon", "Kevin Hart"],
-        ["Dwayne Johnson", "The Rock"],
-
-        ["Tom Holland", "François Hollande"],
-        ["Squeezie", "Cyprien"],
-        ["David Guetta", "DJ Snake"],
-        ["Zinedine Zidane", "Didier Deschamps"],
-        ["Ousmane Dembélé", "Kylian Mbappé"],
-        ["Laurent Manaudou", "Léon Marchand"],
-        ["Pierre Niney", "Pierre Gasly"],
-        ["François Civil", "François Cluzet"],
-        ["Jean Dujardin", "Jean Reno"],
-        ["Jonathan Cohen", "Jonathan Lambert"],
-        ["Philippe Lacheau", "Philippe Katerine"],
-        ["Gérard Depardieu", "Gérard Jugnot"],
-        ["Alain Chabat", "Alain Delon"],
-
-        ["Jérémy Ferrari", "Ferrari"],
-        ["Arnaud Tsamère", "Ta mère"],
-        ["Jean Dujardin", "Jardin"],
-        ["Christian Clavier", "Clavier"],
-        ["Thierry Lhermitte", "Ermite"],
-        ["Jean Reno", "Renault"],
-        ["Marc Lavoine", "Avoine"],
-        ["Omar Sy", "Scie"],
-        ["Michel Blanc", "Blanc"],
-        ["Julien Clerc", "Clair"],
-
-        ["Vin Diesel", "Diesel"],
-        ["Harrison Ford", "Ford"],
-        ["Kevin Bacon", "Bacon"],
-        ["Nicolas Cage", "Cage"],
-        ["Taylor Swift", "Suzuki Swift"],
-        ["Bruno Mars", "Mars"],
-        ["Brad Pitt", "Pit stop"],
-        ["50 Cent", "50 centimes"],
-        ["Eminem", "M&M's"],
-
-
-
-        ["Compte", "Comte"],
-        ["Paris", "Marseille"],
-        ["Lego", "Playmobil"],
-        ["Croissant", "Pain au chocolat"],
-        ["Instagram", "TikTok"],
-        ["Apple", "Samsung"],
-        ["Uber", "Uber Eats"],
-        ["Chat", "Chien"],
-        ["Coca", "Pepsi"],
-        ["Océan", "Mer"],
-        ["Criminel", "Délinquant"],
-        ["Manette", "Souris"],
-        ["Cathédrale", "Église"],
-        ["Shampoing", "Gel douche"],
-        ["Thé", "Café"],
-        ["Boulangerie", "Pâtisserie"],
-        ["Lunettes", "Lentilles"],
-        ["Miroir", "Vitre"],
-        ["Montagne", "Plage"],
-        ["Été", "Hiver"],
-        ["Terre", "Mars"],
-        ["Koh-Lanta", "Fort Boyard"],
-        ["Raclette", "Tartiflette"],
-        ["Futuroscope", "Disneyland"],
-        ["Pain au chocolat", "Chocolatine"],
-        ["Réussite", "Échec"],
-        ["Licence", "Master"],
-        ["Pâtes", "Nouilles"],
-        ["Calvitie", "Mulet"],
-        ["Mac", "Windows"],
-        ["Burger King", "McDonald's"],
-        ["Pacsé", "Marié"],
-        ["Pizza", "Burger"],
-        ["Voiture", "Moto"],
-        ["Piscine", "Mer"],
-        ["Guitare", "Piano"],
-        ["Médecin", "Chirurgien"],
-        ["Avion", "Train"],
-        ["Pomme", "Poire"],
-        ["Lune", "Soleil"],
-        ["Livre", "Journal"],
-        ["Football", "Rugby"],
-        ["Neige", "Pluie"],
-        ["Chocolat Noir", "Chocolat au Lait"],
-        ["Château", "Maison"],
-        ["Vélo", "Trottinette"],
-        ["Whisky", "Vodka"],
-        ["Sushi", "Ramen"],
-        ["Ordinateur", "Tablette"],
-        ["Rivière", "Lac"],
-        ["Étoile", "Planète"],
-        ["Pain de mie", "Baguette"],
-        ["Cinéma", "Théâtre"],
-        ["Requin", "Dauphin"],
-        ["Camion", "Bus"],
-        ["Hôtel", "Auberge"],
-        ["Perroquet", "Aigle"],
-        ["Salade", "Soupe"],
-        ["Montre", "Bracelet"],
-        ["Parapluie", "Manteau"],
-        ["Bougie", "Lampe"],
-        ["Sapin", "Palmier"],
-        ["Robot", "Extraterrestre"],
-        ["Policier", "Pompier"],
-        ["Violon", "Violoncelle"],
-        ["Tornade", "Ouragan"],
-
-        ["Amande", "Amende"],
-        ["Pause", "Pose"],
-        ["Tente", "Tante"],
-        ["Mer", "Maire"],
-        ["Sang", "Cent"],
-        ["Voix", "Voie"],
-        ["Poids", "Pois"],
-        ["Mètre", "Maître"],
-        ["Porc", "Port"],
-        ["Reine", "Renne"],
-        ["Chant", "Champ"],
+    var WORD_THEMES = [{
+            key: "classique",
+            label: "Général",
+            desc: "Le pack classique : objets, animaux, lieux, quotidien.",
+            pairs: [
+                ["Chat", "Chien"],
+                ["Café", "Thé"],
+                ["Pizza", "Burger"],
+                ["Plage", "Montagne"],
+                ["Été", "Hiver"],
+                ["Voiture", "Moto"],
+                ["Piscine", "Mer"],
+                ["Guitare", "Piano"],
+                ["Médecin", "Infirmier"],
+                ["Lion", "Tigre"],
+                ["Avion", "Train"],
+                ["Pomme", "Poire"],
+                ["Lune", "Soleil"],
+                ["Livre", "Journal"],
+                ["Stylo", "Crayon"],
+                ["Football", "Rugby"],
+                ["Neige", "Pluie"],
+                ["Chocolat", "Vanille"],
+                ["Château", "Maison"],
+                ["Pirate", "Corsaire"],
+                ["Vélo", "Trottinette"],
+                ["Fromage", "Beurre"],
+                ["Whisky", "Vodka"],
+                ["Sushi", "Ramen"],
+                ["Ordinateur", "Tablette"],
+                ["Dentiste", "Chirurgien"],
+                ["Rivière", "Lac"],
+                ["Étoile", "Planète"],
+                ["Pain de mie", "Baguette"],
+                ["Cinéma", "Théâtre"],
+                ["Requin", "Dauphin"],
+                ["Camion", "Bus"],
+                ["Hôtel", "Auberge"],
+                ["Perroquet", "Aigle"],
+                ["Salade", "Soupe"],
+                ["Montre", "Bracelet"],
+                ["Parapluie", "Manteau"],
+                ["Bougie", "Lampe"],
+                ["Sapin", "Palmier"],
+                ["Robot", "Extraterrestre"],
+                ["Policier", "Pompier"],
+                ["Violon", "Violoncelle"],
+                ["Tornade", "Ouragan"],
+                ["Compte", "Comte"],
+                ["Paris", "Marseille"],
+                ["Lego", "Playmobil"],
+                ["Croissant", "Pain au chocolat"],
+                ["Apple", "Samsung"],
+                ["Uber", "Uber Eats"],
+                ["Coca", "Pepsi"],
+                ["Océan", "Mer"],
+                ["Criminel", "Délinquant"],
+                ["Manette", "Souris"],
+                ["Cathédrale", "Église"],
+                ["Shampoing", "Gel douche"],
+                ["Boulangerie", "Pâtisserie"],
+                ["Lunettes", "Lentilles"],
+                ["Miroir", "Vitre"],
+                ["Terre", "Mars"],
+                ["Koh-Lanta", "Fort Boyard"],
+                ["Raclette", "Tartiflette"],
+                ["Futuroscope", "Disneyland"],
+                ["Pain au chocolat", "Chocolatine"],
+                ["Réussite", "Échec"],
+                ["Licence", "Master"],
+                ["Pâtes", "Nouilles"],
+                ["Calvitie", "Mulet"],
+                ["Mac", "Windows"],
+                ["Burger King", "McDonald's"],
+                ["Pacsé", "Marié"],
+            ]
+        },
+        {
+            key: "metier",
+            label: "Métier UX / Web",
+            desc: "Vocabulaire design, dev et vie de bureau.",
+            pairs: [
+                ["Delmas", "Louveton"],
+                ["UX", "UI"],
+                ["Zoning", "Wireframe"],
+                ["Maquette", "Prototype"],
+                ["Illustrator", "Photoshop"],
+                ["Accessibilité", "Ergonomie"],
+                ["Serif", "Sans-serif"],
+                ["Montserrat", "Times New Roman"],
+                ["WebP", "AVIF"],
+                ["Header", "Footer"],
+                ["Bouton", "Lien"],
+                ["CDI", "CDD"],
+                ["Freelance", "Chômeur"],
+                ["Tinder", "LinkedIn"],
+                ["Instagram", "TikTok"],
+            ]
+        },
+        {
+            key: "sportauto",
+            label: "Sport auto",
+            desc: "Formule 1, courses et pilotes.",
+            pairs: [
+                ["Ferrari", "Lamborghini"],
+                ["Peugeot", "Renault"],
+                ["F1", "Karting"],
+                ["Lewis Hamilton", "Michael Schumacher"],
+                ["Ayrton Senna", "Alain Prost"],
+                ["Chauffeur", "Pilote"],
+                ["Pneu", "Roue"],
+                ["Accélérer", "Freiner"],
+                ["Chronomètre", "Montre"],
+            ]
+        },
+        {
+            key: "popculture",
+            label: "Cinéma & Pop culture",
+            desc: "Super-héros, films et personnages cultes.",
+            pairs: [
+                ["Flash", "Flash McQueen"],
+                ["Batman", "Ironman"],
+                ["Hulk", "RedHulk"],
+                ["Woody", "Buzz l'Eclair"],
+                ["John Wick", "Tyler Rake"],
+                ["Terminator", "Robocop"],
+                ["Godzilla", "King Kong"],
+                ["Agent 47", "Jason Bourne"],
+                ["Cendrillon", "Blanche-Neige"],
+                ["Lilo", "Stitch"],
+                ["Belle", "Bête"],
+                ["Mickey", "Minnie"],
+            ]
+        },
+        {
+            key: "celebrites",
+            label: "Célébrités & Sosies",
+            desc: "Stars, sportifs et leurs faux jumeaux.",
+            pairs: [
+                ["Ryan Gosling", "Ryan Reynolds"],
+                ["Tom Holland", "Tom Hanks"],
+                ["Tom Cruise", "Tom Felton"],
+                ["Chris Hemsworth", "Chris Evans"],
+                ["Emma Stone", "Emma Watson"],
+                ["Will Smith", "Will Ferrell"],
+                ["Jennifer Lawrence", "Jennifer Lopez"],
+                ["James Cameron", "James Wan"],
+                ["Emma Stone", "Emma Thompson"],
+                ["Kevin Bacon", "Kevin Hart"],
+                ["Dwayne Johnson", "The Rock"],
+                ["Tom Holland", "François Hollande"],
+                ["Squeezie", "Cyprien"],
+                ["David Guetta", "DJ Snake"],
+                ["Zinedine Zidane", "Didier Deschamps"],
+                ["Ousmane Dembélé", "Kylian Mbappé"],
+                ["Laurent Manaudou", "Léon Marchand"],
+                ["Pierre Niney", "Pierre Gasly"],
+                ["François Civil", "François Cluzet"],
+                ["Jean Dujardin", "Jean Reno"],
+                ["Jonathan Cohen", "Jonathan Lambert"],
+                ["Philippe Lacheau", "Philippe Katerine"],
+                ["Gérard Depardieu", "Gérard Jugnot"],
+                ["Alain Chabat", "Alain Delon"],
+            ]
+        },
+        {
+            key: "jeuxdemots",
+            label: "Jeux de mots",
+            desc: "Calembours autour de noms de célébrités.",
+            pairs: [
+                ["Jérémy Ferrari", "Ferrari"],
+                ["Arnaud Tsamère", "Ta mère"],
+                ["Jean Dujardin", "Jardin"],
+                ["Christian Clavier", "Clavier"],
+                ["Thierry Lhermitte", "Ermite"],
+                ["Jean Reno", "Renault"],
+                ["Marc Lavoine", "Avoine"],
+                ["Omar Sy", "Scie"],
+                ["Michel Blanc", "Blanc"],
+                ["Julien Clerc", "Clair"],
+                ["Vin Diesel", "Diesel"],
+                ["Harrison Ford", "Ford"],
+                ["Kevin Bacon", "Bacon"],
+                ["Nicolas Cage", "Cage"],
+                ["Taylor Swift", "Suzuki Swift"],
+                ["Bruno Mars", "Mars"],
+                ["Brad Pitt", "Pit stop"],
+                ["50 Cent", "50 centimes"],
+                ["Eminem", "M&M's"],
+            ]
+        },
+        {
+            key: "homophones",
+            label: "Homophones",
+            desc: "Mots qui se prononcent pareil, sens différent.",
+            pairs: [
+                ["Amande", "Amende"],
+                ["Pause", "Pose"],
+                ["Tente", "Tante"],
+                ["Mer", "Maire"],
+                ["Sang", "Cent"],
+                ["Voix", "Voie"],
+                ["Poids", "Pois"],
+                ["Mètre", "Maître"],
+                ["Porc", "Port"],
+                ["Reine", "Renne"],
+                ["Chant", "Champ"],
+            ]
+        },
     ];
+
+    function getTheme(key) {
+        return WORD_THEMES.filter(function (t) {
+            return t.key === key;
+        })[0];
+    }
+
+    function pairId(themeKey, pair) {
+        return themeKey + '::' + pair[0] + '::' + pair[1];
+    }
+
+    var PAIR_STORAGE_KEY = 'undercover_used_pairs_v1';
+
+    function loadUsedPairs() {
+        try {
+            var raw = window.localStorage.getItem(PAIR_STORAGE_KEY);
+            if (!raw) return {};
+            var parsed = JSON.parse(raw);
+            return (parsed && typeof parsed === 'object') ? parsed : {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveUsedPairs() {
+        try {
+            window.localStorage.setItem(PAIR_STORAGE_KEY, JSON.stringify(usedPairsMap));
+        } catch (e) {}
+    }
+
+    var usedPairsMap = loadUsedPairs();
 
     var MIN_PLAYERS = 3;
     var MAX_PLAYERS = 20;
@@ -213,7 +283,9 @@
         },
         players: [],
         round: 1,
-        lastPairIndex: -1,
+        selectedThemes: {
+            classique: true
+        },
         openCardId: null,
         phase: 'reveal',
         pendingEliminationId: null,
@@ -241,6 +313,7 @@
         roleMime: document.getElementById('roleMime'),
         roleProcureur: document.getElementById('roleProcureur'),
         roleAmoureux: document.getElementById('roleAmoureux'),
+        themesGrid: document.getElementById('themesGrid'),
         namesGrid: document.getElementById('namesGrid'),
         startBtn: document.getElementById('startBtn'),
 
@@ -429,21 +502,86 @@
         state.roles.amoureux = el.roleAmoureux.checked;
     });
 
+    function renderThemeToggles() {
+        el.themesGrid.innerHTML = '';
+        WORD_THEMES.forEach(function (theme) {
+            var label = document.createElement('label');
+            label.className = 'toggle-item';
+
+            var input = document.createElement('input');
+            input.type = 'checkbox';
+            input.id = 'theme-' + theme.key;
+            input.checked = !!state.selectedThemes[theme.key];
+            input.addEventListener('change', function () {
+                state.selectedThemes[theme.key] = input.checked;
+            });
+
+            var span = document.createElement('span');
+            var strong = document.createElement('strong');
+            strong.textContent = theme.label;
+            var small = document.createElement('small');
+            small.textContent = theme.desc + ' — ' + theme.pairs.length + ' paires';
+            span.appendChild(strong);
+            span.appendChild(small);
+
+            label.appendChild(input);
+            label.appendChild(span);
+            el.themesGrid.appendChild(label);
+        });
+    }
+
+    function selectedThemeKeys() {
+        return WORD_THEMES.filter(function (t) {
+                return state.selectedThemes[t.key];
+            })
+            .map(function (t) {
+                return t.key;
+            });
+    }
+
     function pickWordPair() {
-        var index = randomInt(WORD_PAIRS.length);
-        if (WORD_PAIRS.length > 1) {
-            var guard = 0;
-            while (index === state.lastPairIndex && guard < 10) {
-                index = randomInt(WORD_PAIRS.length);
-                guard++;
-            }
+        var themeKeys = selectedThemeKeys();
+        if (!themeKeys.length) themeKeys = ['classique'];
+
+        var pool = [];
+        themeKeys.forEach(function (key) {
+            var theme = getTheme(key);
+            if (!theme) return;
+            theme.pairs.forEach(function (pair) {
+                pool.push({
+                    id: pairId(key, pair),
+                    pair: pair
+                });
+            });
+        });
+        if (!pool.length) {
+            pool = getTheme('classique').pairs.map(function (pair) {
+                return {
+                    id: pairId('classique', pair),
+                    pair: pair
+                };
+            });
         }
-        state.lastPairIndex = index;
-        var pair = WORD_PAIRS[index];
+
+        var available = pool.filter(function (entry) {
+            return !usedPairsMap[entry.id];
+        });
+        if (!available.length) {
+            pool.forEach(function (entry) {
+                delete usedPairsMap[entry.id];
+            });
+            available = pool.slice();
+            showToast('Toutes les paires des thèmes sélectionnés ont été utilisées — le stock repart à zéro.');
+        }
+
+        var choice = available[randomInt(available.length)];
+        usedPairsMap[choice.id] = true;
+        saveUsedPairs();
+
         var flip = Math.random() < 0.5;
         return {
-            civilWord: flip ? pair[0] : pair[1],
-            undercoverWord: flip ? pair[1] : pair[0]
+            civilWord: flip ? choice.pair[0] : choice.pair[1],
+            undercoverWord: flip ? choice.pair[1] : choice.pair[0]
         };
     }
 
@@ -462,10 +600,6 @@
         return state.players.filter(function (p) {
             return p.id === id;
         })[0];
-    }
-
-    function teamOf(player) {
-        return (player.isUndercover || player.isMrWhite) ? 'impostor' : 'civil';
     }
 
     function assignRoles() {
@@ -500,30 +634,70 @@
             player.loverId = null;
         });
 
+        var usedForSpecial = {};
+        var skippedRoles = [];
+
+        function availableIds(ids) {
+            return ids.filter(function (id) {
+                return !usedForSpecial[id];
+            });
+        }
+
         if (state.roles.idiot) {
-            var civilIds = state.players.filter(function (p) {
-                    return !p.isUndercover && !p.isMrWhite;
-                })
-                .map(function (p) {
-                    return p.id;
-                });
+            var civilIds = availableIds(state.players.filter(function (p) {
+                return !p.isUndercover && !p.isMrWhite;
+            }).map(function (p) {
+                return p.id;
+            }));
             if (civilIds.length) {
-                getPlayer(shuffle(civilIds)[0]).isIdiot = true;
+                var idiotId = shuffle(civilIds)[0];
+                getPlayer(idiotId).isIdiot = true;
+                usedForSpecial[idiotId] = true;
+            } else {
+                skippedRoles.push('Idiot du village');
             }
         }
         if (state.roles.fantome) {
-            getPlayer(shuffle(allIds)[0]).isFantome = true;
+            var fantomeIds = availableIds(allIds);
+            if (fantomeIds.length) {
+                var fantomeId = shuffle(fantomeIds)[0];
+                getPlayer(fantomeId).isFantome = true;
+                usedForSpecial[fantomeId] = true;
+            } else {
+                skippedRoles.push('Fantôme');
+            }
         }
         if (state.roles.mime) {
-            getPlayer(shuffle(allIds)[0]).isMime = true;
+            var mimeIds = availableIds(allIds);
+            if (mimeIds.length) {
+                var mimeId = shuffle(mimeIds)[0];
+                getPlayer(mimeId).isMime = true;
+                usedForSpecial[mimeId] = true;
+            } else {
+                skippedRoles.push('Mime');
+            }
         }
         if (state.roles.procureur) {
-            getPlayer(shuffle(allIds)[0]).isProcureur = true;
+            var procureurIds = availableIds(allIds);
+            if (procureurIds.length) {
+                var procureurId = shuffle(procureurIds)[0];
+                getPlayer(procureurId).isProcureur = true;
+                usedForSpecial[procureurId] = true;
+            } else {
+                skippedRoles.push('Procureur');
+            }
         }
-        if (state.roles.amoureux && allIds.length >= 2) {
-            var pair = shuffle(allIds).slice(0, 2);
-            getPlayer(pair[0]).loverId = pair[1];
-            getPlayer(pair[1]).loverId = pair[0];
+        if (state.roles.amoureux) {
+            var amoureuxIds = availableIds(allIds);
+            if (amoureuxIds.length >= 2) {
+                var pair = shuffle(amoureuxIds).slice(0, 2);
+                getPlayer(pair[0]).loverId = pair[1];
+                getPlayer(pair[1]).loverId = pair[0];
+                usedForSpecial[pair[0]] = true;
+                usedForSpecial[pair[1]] = true;
+            } else {
+                skippedRoles.push('Les Amoureux');
+            }
         }
 
         state.phase = 'reveal';
@@ -531,6 +705,10 @@
         state.voteCount = 0;
         state.winner = null;
         state.winnerDetail = '';
+
+        if (skippedRoles.length) {
+            showToast('Pas assez de joueurs disponibles pour attribuer : ' + skippedRoles.join(', ') + '.');
+        }
     }
 
     function collectNames() {
@@ -562,7 +740,6 @@
             };
         });
         state.round = 1;
-        state.lastPairIndex = -1;
         assignRoles();
         switchToGameScreen();
     }
@@ -589,6 +766,10 @@
     el.startBtn.addEventListener('click', function () {
         if (state.playerCount < MIN_PLAYERS) {
             showToast('Il faut au moins ' + MIN_PLAYERS + ' joueurs pour lancer une manche.');
+            return;
+        }
+        if (!selectedThemeKeys().length) {
+            showToast('Sélectionnez au moins un thème de mots avant de lancer la manche.');
             return;
         }
         startGame();
@@ -709,11 +890,9 @@
         if (player.loverId !== null) {
             var lover = getPlayer(player.loverId);
             if (lover) {
-                var sameTeam = teamOf(player) === teamOf(lover);
                 badges.push({
                     label: 'Amoureux de ' + lover.name,
-                    desc: sameTeam ?
-                        'Si l\'un de vous deux est éliminé, l\'autre l\'est aussi.' : 'Vous n\'êtes pas dans le même camp : si l\'un est éliminé, l\'autre l\'est aussi, et vous devez gagner ensemble, seuls contre tous.'
+                    desc: 'Si l\'un de vous deux est éliminé, l\'autre l\'est aussi. Peu importe vos camps respectifs, vous devez être les deux derniers survivants pour gagner ensemble.'
                 });
             }
         }
@@ -892,7 +1071,7 @@
             var loverSurvivor = state.players.filter(function (p) {
                 if (p.eliminated || p.loverId === null) return false;
                 var partner = getPlayer(p.loverId);
-                return partner && !partner.eliminated && teamOf(p) !== teamOf(partner);
+                return partner && !partner.eliminated;
             })[0];
 
             if (loverSurvivor) {
@@ -937,7 +1116,7 @@
             el.elimContinueText.textContent = winnerDetail + ' était l\'Idiot du village et remporte la partie dès le premier vote !';
             el.elimContinueBtn.textContent = 'Voir le résultat';
         } else if (winner === 'amoureux') {
-            el.elimContinueText.textContent = 'Les Amoureux, dans des camps différents, sont les seuls survivants !';
+            el.elimContinueText.textContent = 'Les Amoureux sont les deux derniers survivants !';
             el.elimContinueBtn.textContent = 'Voir le résultat';
         } else {
             el.elimContinueText.textContent = 'La partie continue — au prochain vote.';
@@ -993,7 +1172,7 @@
             el.gameOverBanner.classList.add('game-over-banner--idiot');
         } else if (winner === 'amoureux') {
             el.gameOverTitle.textContent = 'Les Amoureux ont gagné !';
-            el.gameOverSub.textContent = 'Ils n\'étaient pas dans le même camp, mais ont survécu à tous les autres joueurs !';
+            el.gameOverSub.textContent = 'Peu importe leurs camps respectifs, ils ont survécu ensemble à tous les autres joueurs !';
             el.gameOverBanner.classList.add('game-over-banner--amoureux');
         }
 
@@ -1092,5 +1271,6 @@
 
     updateCounter();
     updateUnderCounter();
+    renderThemeToggles();
     renderNameFields();
 })();

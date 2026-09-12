@@ -50,6 +50,13 @@
         </div>
 
         <div class="special-roles">
+          <h2 class="special-roles__title">Thèmes des mots</h2>
+          <p class="hint-text hint-text--role">Sélectionnez un ou plusieurs thèmes : les mots seront piochés parmi
+            ceux-ci. Une paire ne revient jamais tant que tout le stock du thème choisi n'a pas été utilisé.</p>
+          <div id="themesGrid" class="toggle-list"></div>
+        </div>
+
+        <div class="special-roles">
           <h2 class="special-roles__title">Rôles spéciaux <small>(optionnel)</small></h2>
 
           <div class="field-row field-row--tight">
@@ -63,6 +70,9 @@
           </div>
           <p class="hint-text hint-text--role">Ne reçoit aucun mot : il doit improviser pour ne pas se faire repérer.
           </p>
+
+          <p class="hint-text hint-text--role">Un joueur ne peut recevoir qu'un seul rôle spécial ci-dessous. Être
+            Undercover ou Mr. White ne compte pas dans cette limite.</p>
 
           <div class="toggle-list">
             <label class="toggle-item">
@@ -97,8 +107,8 @@
               <input type="checkbox" id="roleAmoureux">
               <span>
                 <strong>Les Amoureux</strong>
-                <small>Liés à un autre joueur : si l'un est éliminé, l'autre l'est aussi. Dans des camps différents, ils
-                  doivent gagner à deux.</small>
+                <small>Liés à un autre joueur : si l'un est éliminé, l'autre l'est aussi. Ils doivent être les deux
+                  derniers survivants pour gagner ensemble, peu importe leurs camps.</small>
               </span>
             </label>
           </div>
