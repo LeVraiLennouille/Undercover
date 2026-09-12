@@ -329,6 +329,7 @@
         progressFill: document.getElementById('progressFill'),
         statusBanner: document.getElementById('statusBanner'),
         tableNote: document.getElementById('tableNote'),
+        roundRolesBanner: document.getElementById('roundRolesBanner'),
         cardsGrid: document.getElementById('cardsGrid'),
 
         voteSection: document.getElementById('voteSection'),
@@ -459,10 +460,14 @@
     }
 
     el.countMinus.addEventListener('click', function () {
+        var wasAtLeast8 = state.playerCount >= 8;
         state.playerCount = clamp(state.playerCount - 1, MIN_PLAYERS, MAX_PLAYERS);
         updateCounter();
         updateUnderCounter();
         renderNameFields();
+        if (state.roles.amoureux && wasAtLeast8 && state.playerCount < 8) {
+            showToast('Les Amoureux avec moins de 8 joueurs peut ne pas offrir une expérience de jeu optimale.');
+        }
     });
 
     el.countPlus.addEventListener('click', function () {
@@ -513,6 +518,9 @@
     el.roleAmoureux.addEventListener('change', function () {
         state.roles.amoureux = el.roleAmoureux.checked;
         renderRolesSummary();
+        if (state.roles.amoureux && state.playerCount < 8) {
+            showToast('Les Amoureux avec moins de 8 joueurs peut ne pas offrir une expérience de jeu optimale.');
+        }
     });
 
     function renderThemeToggles() {
@@ -857,6 +865,77 @@
         el.playerCountLabel.textContent = state.players.length;
         el.totalCount.textContent = state.players.length;
         updateProgress();
+        renderRoundRoles();
+    }
+
+    function renderRoundRoles() {
+        if (!el.roundRolesBanner) return;
+        el.roundRolesBanner.innerHTML = '';
+
+        var entries = [];
+        var mime = state.players.filter(function (p) {
+            return p.isMime;
+        })[0];
+        var procureur = state.players.filter(function (p) {
+            return p.isProcureur;
+        })[0];
+
+        if (mime) {
+            entries.push({
+                icon: '🎭',
+                label: 'Mime',
+                name: mime.name,
+                hint: 'communique uniquement par gestes, sans parler'
+            });
+        }
+        if (procureur) {
+            entries.push({
+                icon: '⚖️',
+                label: 'Procureur',
+                name: procureur.name,
+                hint: 'tranchera en cas d\'égalité au vote'
+            });
+        }
+
+        if (!entries.length) {
+            el.roundRolesBanner.classList.remove('round-roles--show');
+            return;
+        }
+
+        entries.forEach(function (entry) {
+            var chip = document.createElement('div');
+            chip.className = 'round-roles__chip';
+            chip.setAttribute('role', 'listitem');
+
+            var icon = document.createElement('span');
+            icon.className = 'round-roles__icon';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.textContent = entry.icon;
+
+            var text = document.createElement('span');
+            text.className = 'round-roles__text';
+
+            var line = document.createElement('span');
+            line.className = 'round-roles__line';
+            var strong = document.createElement('strong');
+            strong.textContent = entry.label + ' : ';
+            var nameSpan = document.createElement('span');
+            nameSpan.textContent = entry.name;
+            line.appendChild(strong);
+            line.appendChild(nameSpan);
+
+            var small = document.createElement('small');
+            small.textContent = entry.hint;
+
+            text.appendChild(line);
+            text.appendChild(small);
+
+            chip.appendChild(icon);
+            chip.appendChild(text);
+            el.roundRolesBanner.appendChild(chip);
+        });
+
+        el.roundRolesBanner.classList.add('round-roles--show');
     }
 
     function updateProgress() {
@@ -1044,9 +1123,10 @@
             return p.eliminated;
         }).forEach(function (player) {
             var chip = document.createElement('span');
-            chip.className = 'eliminated-chip';
+            chip.className = 'eliminated-chip' + (player.isFantome ? ' eliminated-chip--fantome' : '');
             chip.innerHTML = player.name + ' <span class="eliminated-chip__role">' +
-                (player.isUndercover ? 'Undercover' : 'Civil') + '</span>';
+                (player.isUndercover ? 'Undercover' : 'Civil') + '</span>' +
+                (player.isFantome ? ' <span class="eliminated-chip__fantome">👻 Fantôme — vote encore</span>' : '');
             el.eliminatedList.appendChild(chip);
         });
     }
@@ -1181,7 +1261,13 @@
             return p.name;
         }).join(' et ');
         el.elimName.textContent = namesText + (eliminatedNow.length > 1 ? ' ont été éliminés' : ' a été éliminé(e)');
-        el.elimRole.innerHTML = eliminatedNow.map(roleLabel).join('<br>');
+        el.elimRole.innerHTML = eliminatedNow.map(function (p) {
+            var line = roleLabel(p);
+            if (p.isFantome) {
+                line += '<span class="modal__fantome-note">👻 ' + p.name + ' est le Fantôme — il/elle continue de voter aux prochains tours !</span>';
+            }
+            return line;
+        }).join('<br>');
 
         if (winner === 'civils') {
             el.elimContinueText.textContent = 'Tous les Undercovers et Mr. White ont été démasqués !';

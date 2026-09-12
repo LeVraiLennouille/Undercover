@@ -705,11 +705,60 @@ summary.setup-block__head::marker {
     transition: width .35s ease;
 }
 
+.round-roles {
+    display: none;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 18px;
+}
+
+.round-roles--show {
+    display: flex;
+}
+
+.round-roles__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(182, 146, 78, .08);
+    border: 1px solid rgba(182, 146, 78, .35);
+    border-radius: var(--radius-s);
+    padding: 8px 14px;
+}
+
+.round-roles__icon {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.round-roles__text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.round-roles__line {
+    font-size: .78rem;
+    color: var(--cream);
+}
+
+.round-roles__line strong {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: .03em;
+    color: var(--gold);
+}
+
+.round-roles__text small {
+    font-size: .64rem;
+    line-height: 1.4;
+    color: var(--muted-cream);
+}
+
 .table-note {
     font-size: .78rem;
     color: var(--muted-cream);
     line-height: 1.6;
-    max-width: 60ch;
     margin: 0 0 22px;
     padding: 12px 14px;
     border-left: 2px solid var(--gold-soft);
@@ -852,6 +901,20 @@ summary.setup-block__head::marker {
     font-family: 'Barlow Condensed', sans-serif;
     letter-spacing: .06em;
     color: var(--red);
+}
+
+.eliminated-chip--fantome {
+    border-color: rgba(139, 149, 153, .5);
+}
+
+.eliminated-chip__fantome {
+    text-decoration: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: .04em;
+    color: var(--muted-cream);
+    background: rgba(139, 149, 153, .18);
+    border-radius: 999px;
+    padding: 2px 8px;
 }
 
 .vote-grid .card {
@@ -1053,6 +1116,14 @@ summary.setup-block__head::marker {
     line-height: 1.15;
     word-break: break-word;
     margin-bottom: 20px;
+}
+
+.modal__fantome-note {
+    display: block;
+    margin-top: 4px;
+    font-size: .74rem;
+    font-style: italic;
+    color: var(--ink-soft);
 }
 
 .modal__privacy {
