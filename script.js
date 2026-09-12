@@ -291,7 +291,8 @@
         pendingEliminationId: null,
         voteCount: 0,
         winner: null,
-        winnerDetail: ''
+        winnerDetail: '',
+        winnerReason: ''
     };
 
     var el = {
@@ -790,6 +791,7 @@
         state.voteCount = 0;
         state.winner = null;
         state.winnerDetail = '';
+        state.winnerReason = '';
 
         if (skippedRoles.length) {
             showToast('Pas assez de joueurs disponibles pour attribuer : ' + skippedRoles.join(', ') + '.');
@@ -1100,6 +1102,22 @@
         });
     }
 
+    function livingProcureurExists() {
+        return state.players.filter(function (p) {
+            return p.isProcureur && !p.eliminated;
+        }).length > 0;
+    }
+
+    function fantomePresent() {
+        return state.players.filter(function (p) {
+            return p.isFantome;
+        }).length > 0;
+    }
+
+    function deadlockRuleActive() {
+        return !livingProcureurExists() && !fantomePresent();
+    }
+
     function enterVotePhase() {
         state.phase = 'vote';
         el.tableNote.style.display = 'none';
@@ -1217,6 +1235,7 @@
 
         var winner = null;
         var winnerDetail = '';
+        var winnerReason = '';
 
         var idiotEliminated = eliminatedNow.filter(function (p) {
             return p.isIdiot;
@@ -1225,20 +1244,47 @@
             winner = 'idiot';
             winnerDetail = idiotEliminated.name;
         } else {
-            var loverSurvivor = state.players.filter(function (p) {
-                if (p.eliminated || p.loverId === null) return false;
-                var partner = getPlayer(p.loverId);
-                return partner && !partner.eliminated;
-            })[0];
+            var aliveNow = alivePlayers();
+            var ruleActive = deadlockRuleActive();
 
-            if (loverSurvivor) {
-                var others = state.players.filter(function (p) {
-                    return p.id !== loverSurvivor.id && p.id !== loverSurvivor.loverId;
-                });
-                if (others.length && others.every(function (p) {
-                        return p.eliminated;
-                    })) {
+            if (ruleActive && aliveNow.length === 4) {
+                var loverPairAlive4 = aliveNow.filter(function (p) {
+                    if (p.loverId === null) return false;
+                    var partner = getPlayer(p.loverId);
+                    return partner && !partner.eliminated;
+                }).length > 0;
+                if (loverPairAlive4) {
                     winner = 'amoureux';
+                    winnerReason = 'deadlock4';
+                }
+            }
+
+            if (!winner) {
+                var loverSurvivor = state.players.filter(function (p) {
+                    if (p.eliminated || p.loverId === null) return false;
+                    var partner = getPlayer(p.loverId);
+                    return partner && !partner.eliminated;
+                })[0];
+
+                if (loverSurvivor) {
+                    var others = state.players.filter(function (p) {
+                        return p.id !== loverSurvivor.id && p.id !== loverSurvivor.loverId;
+                    });
+                    if (others.length && others.every(function (p) {
+                            return p.eliminated;
+                        })) {
+                        winner = 'amoureux';
+                    }
+                }
+            }
+
+            if (!winner && ruleActive && aliveNow.length === 2) {
+                var impostorAlive2 = aliveNow.filter(function (p) {
+                    return p.isUndercover || p.isMrWhite;
+                }).length;
+                if (impostorAlive2 > 0) {
+                    winner = 'undercover';
+                    winnerReason = 'deadlock2';
                 }
             }
 
@@ -1256,6 +1302,7 @@
 
         state.winner = winner;
         state.winnerDetail = winnerDetail;
+        state.winnerReason = winnerReason;
 
         var namesText = eliminatedNow.map(function (p) {
             return p.name;
@@ -1273,13 +1320,17 @@
             el.elimContinueText.textContent = 'Tous les Undercovers et Mr. White ont été démasqués !';
             el.elimContinueBtn.textContent = 'Voir le résultat';
         } else if (winner === 'undercover') {
-            el.elimContinueText.textContent = 'Il ne reste plus aucun Civil !';
+            el.elimContinueText.textContent = winnerReason === 'deadlock2' ?
+                'Il ne reste plus que 2 joueurs : l\'Undercover/Mr. White l\'emporte automatiquement !' :
+                'Il ne reste plus aucun Civil !';
             el.elimContinueBtn.textContent = 'Voir le résultat';
         } else if (winner === 'idiot') {
             el.elimContinueText.textContent = winnerDetail + ' était l\'Idiot du village et remporte la partie dès le premier vote !';
             el.elimContinueBtn.textContent = 'Voir le résultat';
         } else if (winner === 'amoureux') {
-            el.elimContinueText.textContent = 'Les Amoureux sont les deux derniers survivants !';
+            el.elimContinueText.textContent = winnerReason === 'deadlock4' ?
+                'Il ne reste plus que 4 joueurs : les Amoureux l\'emportent automatiquement !' :
+                'Les Amoureux sont les deux derniers survivants !';
             el.elimContinueBtn.textContent = 'Voir le résultat';
         } else {
             el.elimContinueText.textContent = 'La partie continue — au prochain vote.';
@@ -1327,7 +1378,9 @@
             el.gameOverBanner.classList.add('game-over-banner--civils');
         } else if (winner === 'undercover') {
             el.gameOverTitle.textContent = impostorPlural ? 'Les Undercovers ont gagné !' : 'L\'Undercover a gagné !';
-            el.gameOverSub.textContent = 'Tous les Civils ont été éliminés avant d\'avoir démasqué l\'imposteur.';
+            el.gameOverSub.textContent = state.winnerReason === 'deadlock2' ?
+                'Il ne restait plus que 2 joueurs : la situation était dans l\'impasse, l\'imposteur l\'emporte automatiquement.' :
+                'Tous les Civils ont été éliminés avant d\'avoir démasqué l\'imposteur.';
             el.gameOverBanner.classList.add('game-over-banner--undercover');
         } else if (winner === 'idiot') {
             el.gameOverTitle.textContent = 'L\'Idiot du village a gagné !';
@@ -1335,7 +1388,9 @@
             el.gameOverBanner.classList.add('game-over-banner--idiot');
         } else if (winner === 'amoureux') {
             el.gameOverTitle.textContent = 'Les Amoureux ont gagné !';
-            el.gameOverSub.textContent = 'Peu importe leurs camps respectifs, ils ont survécu ensemble à tous les autres joueurs !';
+            el.gameOverSub.textContent = state.winnerReason === 'deadlock4' ?
+                'Il ne restait plus que 4 joueurs : la situation était dans l\'impasse, les Amoureux l\'emportent automatiquement.' :
+                'Peu importe leurs camps respectifs, ils ont survécu ensemble à tous les autres joueurs !';
             el.gameOverBanner.classList.add('game-over-banner--amoureux');
         }
 
@@ -1427,6 +1482,7 @@
         state.round = 1;
         state.phase = 'reveal';
         state.winner = null;
+        state.winnerReason = '';
         state.pendingEliminationId = null;
         el.gameScreen.classList.remove('screen--active');
         el.setupScreen.classList.add('screen--active');
