@@ -682,22 +682,35 @@ summary.setup-block__head::marker {
 .btn--primary {
     background: var(--red);
     color: var(--cream);
-    box-shadow: 0 8px 18px -8px rgba(164, 55, 42, .6);
+    box-shadow: 0 4px 14px rgba(var(--bg), 0.2);
+    transition: transform 0.3s cubic-bezier(.22,1,.36,1), box-shadow 0.3s ease, color .4s ease-in-out;
+
+    .btn-arrow {margin-left: 5px; display: inline-block; transition: transform 0.3s cubic-bezier(.22,1,.36,1);}
+
+    &:hover {
+        color: var(--cream);
+        box-shadow: 0 12px 28px rgba(var(--bg), 0.25);
+
+        .btn-arrow {transform: translate(3px, 0);}
+    }
 }
 
-.btn--primary:hover {
-    filter: brightness(1.08);
+.btn--white {
+    background: var(--cream);
+    color: #221c0e;
+
+    &:hover {
+        color: var(--gold);
+    }
 }
 
 .btn--ghost {
-    background: transparent;
-    color: var(--cream);
-    border: 1px solid var(--panel-line);
+    color: var(--gold);
 }
 
 .btn--ghost:hover {
-    border-color: var(--gold-soft);
-    color: var(--gold);
+    background-color: var(--gold-soft);
+    color: var(--cream);
 }
 
 .btn--gold {
@@ -921,7 +934,6 @@ summary.setup-block__head::marker {
     font-size: .78rem;
     color: var(--muted-cream);
     line-height: 1.6;
-    max-width: 60ch;
     margin: 0 0 18px;
     padding: 12px 14px;
     border-left: 2px solid var(--red);
