@@ -243,6 +243,50 @@
 
     var usedPairsMap = loadUsedPairs();
 
+    var THEME_STORAGE_KEY = 'undercover_theme_v1';
+    var TIMER_STORAGE_KEY = 'undercover_timer_settings_v1';
+    var SCORE_STORAGE_KEY = 'undercover_score_log_v1';
+    var MAX_SCORE_ENTRIES = 200;
+
+    function loadTimerSettings() {
+        try {
+            var raw = window.localStorage.getItem(TIMER_STORAGE_KEY);
+            if (!raw) return null;
+            var parsed = JSON.parse(raw);
+            return (parsed && typeof parsed === 'object') ? parsed : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function saveTimerSettings() {
+        try {
+            window.localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify({
+                enabled: state.timerEnabled,
+                durationMin: state.timerDurationMin
+            }));
+        } catch (e) {}
+    }
+
+    function loadScoreLog() {
+        try {
+            var raw = window.localStorage.getItem(SCORE_STORAGE_KEY);
+            if (!raw) return [];
+            var parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveScoreLog() {
+        try {
+            window.localStorage.setItem(SCORE_STORAGE_KEY, JSON.stringify(scoreLog.slice(0, MAX_SCORE_ENTRIES)));
+        } catch (e) {}
+    }
+
+    var scoreLog = loadScoreLog();
+
     var MIN_PLAYERS = 3;
     var MAX_PLAYERS = 20;
     var MIN_UNDERCOVER = 1;
@@ -274,6 +318,7 @@
         playerCount: 6,
         undercoverCount: 1,
         mrWhiteCount: 0,
+        espionCount: 0,
         roles: {
             idiot: false,
             fantome: false,
@@ -292,7 +337,14 @@
         voteCount: 0,
         winner: null,
         winnerDetail: '',
-        winnerReason: ''
+        winnerReason: '',
+        civilWordHint: '',
+        timerEnabled: false,
+        timerDurationMin: 3,
+        timerRemaining: 0,
+        timerRunning: false,
+        timerHasEnded: false,
+        timerStartedRound: false
     };
 
     var el = {
@@ -309,6 +361,10 @@
         mrwhitePlus: document.getElementById('mrwhitePlus'),
         mrwhiteDisplay: document.getElementById('mrwhiteDisplay'),
         mrwhiteRange: document.getElementById('mrwhiteRange'),
+        espionMinus: document.getElementById('espionMinus'),
+        espionPlus: document.getElementById('espionPlus'),
+        espionDisplay: document.getElementById('espionDisplay'),
+        espionRange: document.getElementById('espionRange'),
         roleIdiot: document.getElementById('roleIdiot'),
         roleFantome: document.getElementById('roleFantome'),
         roleMime: document.getElementById('roleMime'),
@@ -323,6 +379,26 @@
         rolesSummary: document.getElementById('rolesSummary'),
         setupRecap: document.getElementById('setupRecap'),
 
+        timerEnabledInput: document.getElementById('timerEnabled'),
+        timerDurationField: document.getElementById('timerDurationField'),
+        timerMinus: document.getElementById('timerMinus'),
+        timerPlus: document.getElementById('timerPlus'),
+        timerDisplaySetup: document.getElementById('timerDisplay'),
+        timerSummary: document.getElementById('timerSummary'),
+
+        themeToggle: document.getElementById('themeToggle'),
+
+        scoreLogToggle: document.getElementById('scoreLogToggle'),
+        scoreLogBtnGame: document.getElementById('scoreLogBtnGame'),
+        scoreModal: document.getElementById('scoreModal'),
+        scoreScrim: document.getElementById('scoreScrim'),
+        scoreEmptyState: document.getElementById('scoreEmptyState'),
+        scoreContent: document.getElementById('scoreContent'),
+        scoreLeaderboard: document.getElementById('scoreLeaderboard'),
+        scoreHistory: document.getElementById('scoreHistory'),
+        scoreResetBtn: document.getElementById('scoreResetBtn'),
+        closeScoreBtn: document.getElementById('closeScoreBtn'),
+
         roundNumber: document.getElementById('roundNumber'),
         playerCountLabel: document.getElementById('playerCountLabel'),
         viewedCount: document.getElementById('viewedCount'),
@@ -332,6 +408,12 @@
         tableNote: document.getElementById('tableNote'),
         roundRolesBanner: document.getElementById('roundRolesBanner'),
         cardsGrid: document.getElementById('cardsGrid'),
+
+        discussionTimer: document.getElementById('discussionTimer'),
+        discussionTimerDisplay: document.getElementById('discussionTimerDisplay'),
+        discussionTimerFill: document.getElementById('discussionTimerFill'),
+        discussionTimerToggle: document.getElementById('discussionTimerToggle'),
+        discussionTimerExtend: document.getElementById('discussionTimerExtend'),
 
         voteSection: document.getElementById('voteSection'),
         eliminatedList: document.getElementById('eliminatedList'),
@@ -397,6 +479,57 @@
         el.srAnnounce.textContent = message;
     }
 
+    function vibrate(pattern) {
+        try {
+            if (window.navigator && typeof window.navigator.vibrate === 'function') {
+                window.navigator.vibrate(pattern);
+            }
+        } catch (e) {}
+    }
+
+    function loadTheme() {
+        try {
+            return window.localStorage.getItem(THEME_STORAGE_KEY);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function saveTheme(theme) {
+        try {
+            window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+        } catch (e) {}
+    }
+
+    function applyTheme(theme) {
+        var isLight = theme === 'light';
+        if (isLight) {
+            document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+        if (el.themeToggle) {
+            el.themeToggle.setAttribute('aria-pressed', String(isLight));
+            el.themeToggle.setAttribute('aria-label', isLight ? 'Passer en mode sombre' : 'Passer en mode clair');
+        }
+    }
+
+    function initTheme() {
+        var saved = loadTheme();
+        applyTheme(saved === 'light' ? 'light' : 'dark');
+    }
+
+    if (el.themeToggle) {
+        el.themeToggle.addEventListener('click', function () {
+            var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            var next = isLight ? 'dark' : 'light';
+            applyTheme(next);
+            saveTheme(next);
+        });
+    }
+
+    initTheme();
+
     function renderNameFields() {
         var count = state.playerCount;
         var existing = el.namesGrid.querySelectorAll('input[data-name-input]');
@@ -439,13 +572,15 @@
         var cap = maxImpostors(state.playerCount);
         state.undercoverCount = clamp(state.undercoverCount, MIN_UNDERCOVER, cap);
         state.mrWhiteCount = clamp(state.mrWhiteCount, 0, Math.max(0, cap - state.undercoverCount));
+        state.espionCount = clamp(state.espionCount, 0, Math.max(0, cap - state.undercoverCount - state.mrWhiteCount));
     }
 
     function updateUnderCounter() {
         clampRoleCounts();
         var cap = maxImpostors(state.playerCount);
-        var underMax = Math.max(MIN_UNDERCOVER, cap - state.mrWhiteCount);
-        var mrwhiteMax = Math.max(0, cap - state.undercoverCount);
+        var underMax = Math.max(MIN_UNDERCOVER, cap - state.mrWhiteCount - state.espionCount);
+        var mrwhiteMax = Math.max(0, cap - state.undercoverCount - state.espionCount);
+        var espionMax = Math.max(0, cap - state.undercoverCount - state.mrWhiteCount);
 
         el.underDisplay.textContent = state.undercoverCount;
         el.underRange.textContent = 'de ' + MIN_UNDERCOVER + ' à ' + underMax;
@@ -456,6 +591,11 @@
         el.mrwhiteRange.textContent = 'de 0 à ' + mrwhiteMax;
         el.mrwhiteMinus.disabled = state.mrWhiteCount <= 0;
         el.mrwhitePlus.disabled = state.mrWhiteCount >= mrwhiteMax;
+
+        el.espionDisplay.textContent = state.espionCount;
+        el.espionRange.textContent = 'de 0 à ' + espionMax;
+        el.espionMinus.disabled = state.espionCount <= 0;
+        el.espionPlus.disabled = state.espionCount >= espionMax;
 
         renderRolesSummary();
     }
@@ -485,7 +625,7 @@
 
     el.underPlus.addEventListener('click', function () {
         var cap = maxImpostors(state.playerCount);
-        state.undercoverCount = clamp(state.undercoverCount + 1, MIN_UNDERCOVER, Math.max(MIN_UNDERCOVER, cap - state.mrWhiteCount));
+        state.undercoverCount = clamp(state.undercoverCount + 1, MIN_UNDERCOVER, Math.max(MIN_UNDERCOVER, cap - state.mrWhiteCount - state.espionCount));
         updateUnderCounter();
     });
 
@@ -496,7 +636,18 @@
 
     el.mrwhitePlus.addEventListener('click', function () {
         var cap = maxImpostors(state.playerCount);
-        state.mrWhiteCount = clamp(state.mrWhiteCount + 1, 0, Math.max(0, cap - state.undercoverCount));
+        state.mrWhiteCount = clamp(state.mrWhiteCount + 1, 0, Math.max(0, cap - state.undercoverCount - state.espionCount));
+        updateUnderCounter();
+    });
+
+    el.espionMinus.addEventListener('click', function () {
+        state.espionCount = clamp(state.espionCount - 1, 0, maxImpostors(state.playerCount));
+        updateUnderCounter();
+    });
+
+    el.espionPlus.addEventListener('click', function () {
+        var cap = maxImpostors(state.playerCount);
+        state.espionCount = clamp(state.espionCount + 1, 0, Math.max(0, cap - state.undercoverCount - state.mrWhiteCount));
         updateUnderCounter();
     });
 
@@ -523,6 +674,57 @@
             showToast('Les Amoureux avec moins de 8 joueurs peut ne pas offrir une expérience de jeu optimale.');
         }
     });
+
+    var TIMER_MIN_DURATION = 1;
+    var TIMER_MAX_DURATION = 15;
+
+    function renderTimerSetupUI() {
+        if (el.timerEnabledInput) el.timerEnabledInput.checked = state.timerEnabled;
+        if (el.timerDurationField) el.timerDurationField.style.display = state.timerEnabled ? '' : 'none';
+        if (el.timerDisplaySetup) el.timerDisplaySetup.textContent = state.timerDurationMin;
+        if (el.timerMinus) el.timerMinus.disabled = state.timerDurationMin <= TIMER_MIN_DURATION;
+        if (el.timerPlus) el.timerPlus.disabled = state.timerDurationMin >= TIMER_MAX_DURATION;
+        if (el.timerSummary) {
+            el.timerSummary.textContent = state.timerEnabled ?
+                (state.timerDurationMin + ' min') : 'Désactivé';
+        }
+        renderSetupRecap();
+    }
+
+    if (el.timerEnabledInput) {
+        el.timerEnabledInput.addEventListener('change', function () {
+            state.timerEnabled = el.timerEnabledInput.checked;
+            saveTimerSettings();
+            renderTimerSetupUI();
+        });
+    }
+
+    if (el.timerMinus) {
+        el.timerMinus.addEventListener('click', function () {
+            state.timerDurationMin = clamp(state.timerDurationMin - 1, TIMER_MIN_DURATION, TIMER_MAX_DURATION);
+            saveTimerSettings();
+            renderTimerSetupUI();
+        });
+    }
+
+    if (el.timerPlus) {
+        el.timerPlus.addEventListener('click', function () {
+            state.timerDurationMin = clamp(state.timerDurationMin + 1, TIMER_MIN_DURATION, TIMER_MAX_DURATION);
+            saveTimerSettings();
+            renderTimerSetupUI();
+        });
+    }
+
+    (function initTimerSettings() {
+        var saved = loadTimerSettings();
+        if (saved) {
+            if (typeof saved.enabled === 'boolean') state.timerEnabled = saved.enabled;
+            if (typeof saved.durationMin === 'number') {
+                state.timerDurationMin = clamp(saved.durationMin, TIMER_MIN_DURATION, TIMER_MAX_DURATION);
+            }
+        }
+        renderTimerSetupUI();
+    })();
 
     function renderThemeToggles() {
         el.themesGrid.innerHTML = '';
@@ -578,6 +780,7 @@
         if (el.rolesSummary) {
             var parts = [];
             if (state.mrWhiteCount > 0) parts.push(state.mrWhiteCount + ' Mr. White');
+            if (state.espionCount > 0) parts.push(state.espionCount + (state.espionCount > 1 ? ' Espions' : ' Espion'));
             var labels = [];
             if (state.roles.idiot) labels.push('Idiot du village');
             if (state.roles.fantome) labels.push('Fantôme');
@@ -596,6 +799,7 @@
         chips.push(state.playerCount + ' joueurs');
         chips.push(state.undercoverCount + (state.undercoverCount > 1 ? ' Undercovers' : ' Undercover'));
         if (state.mrWhiteCount > 0) chips.push(state.mrWhiteCount + ' Mr. White');
+        if (state.espionCount > 0) chips.push(state.espionCount + (state.espionCount > 1 ? ' Espions' : ' Espion'));
 
         var themeCount = selectedThemeKeys().length;
         chips.push(themeCount ? (themeCount + (themeCount > 1 ? ' thèmes' : ' thème')) : 'aucun thème');
@@ -605,6 +809,10 @@
         }).length;
         if (specialCount) {
             chips.push(specialCount + (specialCount > 1 ? ' rôles spéciaux' : ' rôle spécial'));
+        }
+
+        if (state.timerEnabled) {
+            chips.push('minuteur ' + state.timerDurationMin + ' min');
         }
 
         el.setupRecap.innerHTML = '';
@@ -695,22 +903,28 @@
         var cap = maxImpostors(total);
         var undercoverCount = clamp(state.undercoverCount, MIN_UNDERCOVER, cap);
         var mrWhiteCount = clamp(state.mrWhiteCount, 0, Math.max(0, cap - undercoverCount));
+        var espionCount = clamp(state.espionCount, 0, Math.max(0, cap - undercoverCount - mrWhiteCount));
 
         var allIds = state.players.map(function (p) {
             return p.id;
         });
-        var shuffledImpostors = shuffle(allIds).slice(0, undercoverCount + mrWhiteCount);
+        var shuffledImpostors = shuffle(allIds).slice(0, undercoverCount + mrWhiteCount + espionCount);
         var undercoverIds = {};
         var mrWhiteIds = {};
+        var espionIds = {};
         shuffledImpostors.forEach(function (id, idx) {
             if (idx < undercoverCount) undercoverIds[id] = true;
-            else mrWhiteIds[id] = true;
+            else if (idx < undercoverCount + mrWhiteCount) mrWhiteIds[id] = true;
+            else espionIds[id] = true;
         });
+
+        state.civilWordHint = words.civilWord.charAt(0).toUpperCase();
 
         state.players.forEach(function (player) {
             player.isUndercover = !!undercoverIds[player.id];
             player.isMrWhite = !!mrWhiteIds[player.id];
-            player.word = player.isMrWhite ? '' : (player.isUndercover ? words.undercoverWord : words.civilWord);
+            player.isEspion = !!espionIds[player.id];
+            player.word = (player.isMrWhite || player.isEspion) ? '' : (player.isUndercover ? words.undercoverWord : words.civilWord);
             player.viewed = false;
             player.eliminated = false;
             player.isIdiot = false;
@@ -731,7 +945,7 @@
 
         if (state.roles.idiot) {
             var civilIds = availableIds(state.players.filter(function (p) {
-                return !p.isUndercover && !p.isMrWhite;
+                return !p.isUndercover && !p.isMrWhite && !p.isEspion;
             }).map(function (p) {
                 return p.id;
             }));
@@ -816,6 +1030,7 @@
                 name: name,
                 isUndercover: false,
                 isMrWhite: false,
+                isEspion: false,
                 word: '',
                 viewed: false,
                 eliminated: false,
@@ -840,6 +1055,7 @@
         el.startVoteBtn.style.display = '';
         el.startVoteBtn.disabled = true;
         el.summaryBtn.classList.add('summary-btn--hidden');
+        resetDiscussionTimer();
     }
 
     function switchToGameScreen() {
@@ -953,6 +1169,125 @@
             el.startVoteBtn.disabled = !allViewed;
         }
         el.statusBanner.classList.toggle('status-banner--show', allViewed && state.phase === 'reveal');
+
+        if (allViewed && state.phase === 'reveal' && state.timerEnabled && !state.timerStartedRound) {
+            state.timerStartedRound = true;
+            startDiscussionTimer();
+        }
+    }
+
+    var discussionTimerInterval = null;
+
+    function formatTimerTime(totalSeconds) {
+        var s = Math.max(0, totalSeconds);
+        var m = Math.floor(s / 60);
+        var sec = s % 60;
+        return (m < 10 ? '0' + m : m) + ':' + (sec < 10 ? '0' + sec : sec);
+    }
+
+    function clearDiscussionInterval() {
+        if (discussionTimerInterval) {
+            clearInterval(discussionTimerInterval);
+            discussionTimerInterval = null;
+        }
+    }
+
+    function updateDiscussionTimerDisplay() {
+        if (!el.discussionTimer) return;
+        el.discussionTimerDisplay.textContent = formatTimerTime(state.timerRemaining);
+        var totalSeconds = Math.max(1, state.timerDurationMin * 60);
+        var pct = Math.max(0, Math.min(100, (state.timerRemaining / totalSeconds) * 100));
+        el.discussionTimerFill.style.width = pct + '%';
+        el.discussionTimer.classList.toggle('discussion-timer--warning', state.timerRemaining <= 30 && state.timerRemaining > 0);
+        el.discussionTimer.classList.toggle('discussion-timer--paused', !state.timerRunning && !state.timerHasEnded);
+        if (el.discussionTimerToggle) {
+            el.discussionTimerToggle.textContent = state.timerHasEnded ? 'Relancer' : (state.timerRunning ? 'Pause' : 'Reprendre');
+        }
+    }
+
+    function tickDiscussionTimer() {
+        state.timerRemaining -= 1;
+        if (state.timerRemaining <= 0) {
+            state.timerRemaining = 0;
+            state.timerRunning = false;
+            state.timerHasEnded = true;
+            clearDiscussionInterval();
+            updateDiscussionTimerDisplay();
+            vibrate([200, 100, 200]);
+            showToast('Temps de discussion écoulé — place au vote !');
+            announce('Temps de discussion écoulé.');
+            return;
+        }
+        updateDiscussionTimerDisplay();
+    }
+
+    function startDiscussionTimer() {
+        if (!state.timerEnabled || !el.discussionTimer) return;
+        if (state.timerRemaining <= 0) {
+            state.timerRemaining = state.timerDurationMin * 60;
+        }
+        state.timerHasEnded = false;
+        state.timerRunning = true;
+        el.discussionTimer.classList.add('discussion-timer--show');
+        updateDiscussionTimerDisplay();
+        clearDiscussionInterval();
+        discussionTimerInterval = setInterval(tickDiscussionTimer, 1000);
+    }
+
+    function resetDiscussionTimer() {
+        clearDiscussionInterval();
+        state.timerRemaining = state.timerDurationMin * 60;
+        state.timerRunning = false;
+        state.timerHasEnded = false;
+        state.timerStartedRound = false;
+        if (el.discussionTimer) {
+            el.discussionTimer.classList.remove('discussion-timer--show', 'discussion-timer--warning', 'discussion-timer--paused');
+        }
+        updateDiscussionTimerDisplay();
+    }
+
+    function stopDiscussionTimer() {
+        clearDiscussionInterval();
+        state.timerRunning = false;
+        if (el.discussionTimer) {
+            el.discussionTimer.classList.remove('discussion-timer--show');
+        }
+    }
+
+    if (el.discussionTimerToggle) {
+        el.discussionTimerToggle.addEventListener('click', function () {
+            if (state.timerHasEnded) {
+                state.timerRemaining = state.timerDurationMin * 60;
+                state.timerHasEnded = false;
+                state.timerRunning = true;
+                el.discussionTimer.classList.remove('discussion-timer--warning');
+                clearDiscussionInterval();
+                discussionTimerInterval = setInterval(tickDiscussionTimer, 1000);
+                updateDiscussionTimerDisplay();
+                return;
+            }
+            state.timerRunning = !state.timerRunning;
+            clearDiscussionInterval();
+            if (state.timerRunning) {
+                discussionTimerInterval = setInterval(tickDiscussionTimer, 1000);
+            }
+            updateDiscussionTimerDisplay();
+        });
+    }
+
+    if (el.discussionTimerExtend) {
+        el.discussionTimerExtend.addEventListener('click', function () {
+            state.timerRemaining += 60;
+            if (state.timerHasEnded) {
+                state.timerHasEnded = false;
+                state.timerRunning = true;
+                clearDiscussionInterval();
+                discussionTimerInterval = setInterval(tickDiscussionTimer, 1000);
+            }
+            el.discussionTimer.classList.remove('discussion-timer--warning');
+            updateDiscussionTimerDisplay();
+            showToast('Une minute de discussion supplémentaire a été ajoutée.');
+        });
     }
 
     var CARD_ICON = '<svg class="card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">' +
@@ -1015,11 +1350,16 @@
         var player = getPlayer(id);
         if (!player || player.viewed) return;
 
+        vibrate(12);
+
         state.openCardId = id;
         el.modalOwner.textContent = 'Carte de ' + player.name;
 
         if (player.isMrWhite) {
             el.modalRole.textContent = 'Tu es Mr. White — improvise, tu n\'as pas de mot !';
+            el.modalWord.textContent = 'Aucun mot';
+        } else if (player.isEspion) {
+            el.modalRole.textContent = 'Tu es l\'Espion — tu n\'as pas de mot, mais un indice t\'attend ci-dessous';
             el.modalWord.textContent = 'Aucun mot';
         } else if (player.isUndercover) {
             el.modalRole.textContent = 'Tu es l\'Undercover — fonds-toi dans la masse';
@@ -1041,6 +1381,12 @@
     function renderModalBadges(player) {
         el.modalBadges.innerHTML = '';
         var badges = [];
+        if (player.isEspion) {
+            badges.push({
+                label: 'Indice d\'Espion',
+                desc: 'Le mot des Civils commence par la lettre « ' + state.civilWordHint + ' ».'
+            });
+        }
         if (player.isIdiot) badges.push(ROLE_INFO.idiot);
         if (player.isFantome) badges.push(ROLE_INFO.fantome);
         if (player.isMime) badges.push(ROLE_INFO.mime);
@@ -1073,6 +1419,8 @@
             return p.id === state.openCardId;
         })[0];
         if (player) player.viewed = true;
+
+        vibrate(12);
 
         el.wordModal.classList.remove('modal--open');
         el.wordModal.setAttribute('aria-hidden', 'true');
@@ -1125,6 +1473,7 @@
         el.statusBanner.classList.remove('status-banner--show');
         el.startVoteBtn.style.display = 'none';
         el.voteSection.classList.add('vote-section--active');
+        stopDiscussionTimer();
         renderEliminatedList();
         renderVoteGrid();
         announce('Phase de vote lancée.');
@@ -1186,6 +1535,7 @@
     function openVoteConfirm(id) {
         var player = getPlayer(id);
         if (!player) return;
+        vibrate(12);
         state.pendingEliminationId = id;
         el.voteConfirmName.textContent = player.name;
         el.voteConfirmModal.classList.add('modal--open');
@@ -1206,12 +1556,14 @@
     el.voteConfirmYes.addEventListener('click', function () {
         var id = state.pendingEliminationId;
         if (id === null) return;
+        vibrate([30, 40, 30]);
         closeVoteConfirm();
         performElimination(id);
     });
 
     function roleLabel(player) {
         if (player.isMrWhite) return player.name + ' était Mr. White';
+        if (player.isEspion) return player.name + ' était l\'Espion';
         if (player.isUndercover) return player.name + ' était l\'Undercover';
         return player.name + ' était Civil';
     }
@@ -1280,7 +1632,7 @@
 
             if (!winner && ruleActive && aliveNow.length === 2) {
                 var impostorAlive2 = aliveNow.filter(function (p) {
-                    return p.isUndercover || p.isMrWhite;
+                    return p.isUndercover || p.isMrWhite || p.isEspion;
                 }).length;
                 if (impostorAlive2 > 0) {
                     winner = 'undercover';
@@ -1290,10 +1642,10 @@
 
             if (!winner) {
                 var aliveImpostor = state.players.filter(function (p) {
-                    return !p.eliminated && (p.isUndercover || p.isMrWhite);
+                    return !p.eliminated && (p.isUndercover || p.isMrWhite || p.isEspion);
                 }).length;
                 var aliveCivil = state.players.filter(function (p) {
-                    return !p.eliminated && !(p.isUndercover || p.isMrWhite);
+                    return !p.eliminated && !(p.isUndercover || p.isMrWhite || p.isEspion);
                 }).length;
                 if (aliveImpostor === 0) winner = 'civils';
                 else if (aliveCivil === 0) winner = 'undercover';
@@ -1365,9 +1717,10 @@
         el.voteSection.classList.remove('vote-section--active');
         el.startVoteBtn.style.display = 'none';
         el.summaryBtn.classList.remove('summary-btn--hidden');
+        stopDiscussionTimer();
 
         var impostorPlural = state.players.filter(function (p) {
-            return p.isUndercover || p.isMrWhite;
+            return p.isUndercover || p.isMrWhite || p.isEspion;
         }).length > 1;
 
         if (winner === 'civils') {
@@ -1396,6 +1749,7 @@
 
         el.gameOverBanner.classList.add('game-over-banner--active');
         announce(el.gameOverTitle.textContent);
+        recordScoreEntry(winner);
     }
 
     function openSummary() {
@@ -1413,7 +1767,7 @@
             right.style.gap = '6px';
 
             var wordSpan = document.createElement('span');
-            wordSpan.textContent = player.isMrWhite ? 'Aucun mot' : player.word;
+            wordSpan.textContent = (player.isMrWhite || player.isEspion) ? 'Aucun mot' : player.word;
             wordSpan.style.color = 'var(--ink-soft)';
             right.appendChild(wordSpan);
 
@@ -1421,6 +1775,9 @@
             if (player.isMrWhite) {
                 roleSpan.className = 'summary-role summary-role--undercover';
                 roleSpan.textContent = 'Mr. White';
+            } else if (player.isEspion) {
+                roleSpan.className = 'summary-role summary-role--undercover';
+                roleSpan.textContent = 'Espion';
             } else if (player.isUndercover) {
                 roleSpan.className = 'summary-role summary-role--undercover';
                 roleSpan.textContent = 'Undercover';
@@ -1464,6 +1821,128 @@
     el.closeSummaryBtn.addEventListener('click', closeSummary);
     el.summaryScrim.addEventListener('click', closeSummary);
 
+    function recordScoreEntry(winner) {
+        var winnerLabel = '';
+        var winnerNames = [];
+
+        if (winner === 'civils') {
+            winnerLabel = 'Les Civils';
+            winnerNames = state.players.filter(function (p) {
+                return !p.isUndercover && !p.isMrWhite && !p.isEspion;
+            }).map(function (p) {
+                return p.name;
+            });
+        } else if (winner === 'undercover') {
+            winnerLabel = 'Les Imposteurs';
+            winnerNames = state.players.filter(function (p) {
+                return p.isUndercover || p.isMrWhite || p.isEspion;
+            }).map(function (p) {
+                return p.name;
+            });
+        } else if (winner === 'idiot') {
+            winnerLabel = 'Idiot du village';
+            winnerNames = state.winnerDetail ? [state.winnerDetail] : [];
+        } else if (winner === 'amoureux') {
+            winnerLabel = 'Les Amoureux';
+            winnerNames = state.players.filter(function (p) {
+                return p.loverId !== null;
+            }).map(function (p) {
+                return p.name;
+            });
+        } else {
+            return;
+        }
+
+        scoreLog.unshift({
+            round: state.round,
+            playerCount: state.players.length,
+            winner: winner,
+            winnerLabel: winnerLabel,
+            winnerNames: winnerNames
+        });
+        if (scoreLog.length > MAX_SCORE_ENTRIES) {
+            scoreLog.length = MAX_SCORE_ENTRIES;
+        }
+        saveScoreLog();
+    }
+
+    function renderScoreModal() {
+        var hasEntries = scoreLog.length > 0;
+        if (el.scoreEmptyState) el.scoreEmptyState.style.display = hasEntries ? 'none' : '';
+        if (el.scoreContent) el.scoreContent.style.display = hasEntries ? '' : 'none';
+        if (!hasEntries) return;
+
+        var tally = {};
+        scoreLog.forEach(function (entry) {
+            (entry.winnerNames || []).forEach(function (name) {
+                tally[name] = (tally[name] || 0) + 1;
+            });
+        });
+        var leaderboard = Object.keys(tally).map(function (name) {
+            return {
+                name: name,
+                wins: tally[name]
+            };
+        }).sort(function (a, b) {
+            return b.wins - a.wins;
+        });
+
+        el.scoreLeaderboard.innerHTML = '';
+        leaderboard.forEach(function (entry) {
+            var li = document.createElement('li');
+            var nameSpan = document.createElement('strong');
+            nameSpan.textContent = entry.name;
+            var countSpan = document.createElement('span');
+            countSpan.className = 'score-leaderboard__count';
+            countSpan.textContent = entry.wins + (entry.wins > 1 ? ' victoires' : ' victoire');
+            li.appendChild(nameSpan);
+            li.appendChild(countSpan);
+            el.scoreLeaderboard.appendChild(li);
+        });
+
+        el.scoreHistory.innerHTML = '';
+        scoreLog.forEach(function (entry) {
+            var li = document.createElement('li');
+            var labelSpan = document.createElement('strong');
+            labelSpan.className = 'score-history__label';
+            labelSpan.textContent = entry.winnerLabel;
+            var roundSpan = document.createElement('span');
+            roundSpan.className = 'score-history__round';
+            roundSpan.textContent = 'Manche ' + entry.round + ' · ' + entry.playerCount + ' joueurs';
+            li.appendChild(labelSpan);
+            li.appendChild(roundSpan);
+            el.scoreHistory.appendChild(li);
+        });
+    }
+
+    function openScoreModal() {
+        renderScoreModal();
+        el.scoreModal.classList.add('modal--open');
+        el.scoreModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        el.closeScoreBtn.focus();
+    }
+
+    function closeScoreModal() {
+        el.scoreModal.classList.remove('modal--open');
+        el.scoreModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    if (el.scoreLogToggle) el.scoreLogToggle.addEventListener('click', openScoreModal);
+    if (el.scoreLogBtnGame) el.scoreLogBtnGame.addEventListener('click', openScoreModal);
+    if (el.closeScoreBtn) el.closeScoreBtn.addEventListener('click', closeScoreModal);
+    if (el.scoreScrim) el.scoreScrim.addEventListener('click', closeScoreModal);
+
+    if (el.scoreResetBtn) {
+        el.scoreResetBtn.addEventListener('click', function () {
+            scoreLog = [];
+            saveScoreLog();
+            renderScoreModal();
+            showToast('Le journal des scores a été réinitialisé.');
+        });
+    }
+
     function newRound() {
         closeSummary();
         state.round += 1;
@@ -1478,6 +1957,7 @@
     el.summaryNewRoundBtn.addEventListener('click', newRound);
 
     el.resetBtn.addEventListener('click', function () {
+        stopDiscussionTimer();
         state.players = [];
         state.round = 1;
         state.phase = 'reveal';
@@ -1501,4 +1981,10 @@
     renderThemeToggles();
     renderNameFields();
     renderSetupRecap();
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('sw.js').catch(function () {});
+        });
+    }
 })();

@@ -3,8 +3,17 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Undercover — jeu de déduction</title>
+  <meta name="description" content="Jeu de déduction façon Mr. White, à jouer entre amis sur un seul appareil.">
+  <meta name="theme-color" content="#10161a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-apple-touch.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Undercover">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -14,6 +23,20 @@
 </head>
 
 <body>
+
+  <button type="button" id="themeToggle" class="theme-toggle" aria-label="Passer en mode clair" aria-pressed="false">
+    <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" aria-hidden="true">
+      <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5z" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.6" />
+      <path
+        d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.85 1.85M17.55 17.55l1.85 1.85M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.85-1.85M17.55 6.45l1.85-1.85"
+        stroke-linecap="round" />
+    </svg>
+  </button>
 
   <div class="wordmark">
     <h1>Undercover</h1>
@@ -26,9 +49,14 @@
       <div class="dossier">
         <div class="dossier__intro">
           <h2 id="setup-title">Nouvelle manche</h2>
-          <button type="button" id="rulesToggle" class="rules-toggle" aria-expanded="false" aria-controls="rulesText">
-            Comment jouer<span class="rules-toggle__chevron" aria-hidden="true"></span>
-          </button>
+          <div class="dossier__intro-actions">
+            <button type="button" id="scoreLogToggle" class="rules-toggle">
+              Journal des scores
+            </button>
+            <button type="button" id="rulesToggle" class="rules-toggle" aria-expanded="false" aria-controls="rulesText">
+              Comment jouer<span class="rules-toggle__chevron" aria-hidden="true"></span>
+            </button>
+          </div>
         </div>
         <p class="dossier__lead" id="rulesText" hidden>
           Chaque joueur reçoit un mot en secret. Tous les civils reçoivent le même mot ;
@@ -98,6 +126,23 @@
               repérer.
             </p>
 
+            <div class="field-row field-row--tight">
+              <h3>Espion</h3>
+              <div class="counter">
+                <button type="button" id="espionMinus" aria-label="Retirer un Espion">−</button>
+                <div class="counter__value"><span id="espionDisplay">0</span><small id="espionRange">de 0 à
+                    1</small>
+                </div>
+                <button type="button" id="espionPlus" aria-label="Ajouter un Espion">+</button>
+              </div>
+            </div>
+            <p class="hint-text hint-text--role">Ne reçoit aucun mot lui non plus, mais est autorisé à connaître la
+              première lettre du mot des Civils — un indice discret pour se fondre dans la masse.
+            </p>
+
+            <p class="hint-text hint-text--role">Un joueur ne peut recevoir qu'un seul rôle spécial ci-dessous. Être
+              Undercover, Mr. White ou Espion ne compte pas dans cette limite.</p>
+
             <div class="toggle-list">
               <label class="toggle-item">
                 <input type="checkbox" id="roleIdiot">
@@ -131,13 +176,11 @@
                 <input type="checkbox" id="roleAmoureux">
                 <span>
                   <strong>Les Amoureux</strong>
-                  <small>Liés à un autre joueur : si l'un est éliminé, l'autre l'est aussi. Ils gagnent à 2</small>
+                  <small>Liés à un autre joueur : si l'un est éliminé, l'autre l'est aussi. Ils doivent être les deux
+                    derniers survivants pour gagner ensemble, peu importe leurs camps.</small>
                 </span>
               </label>
             </div>
-
-            <p class="hint-text hint-text--role hint-text--info">Un joueur ne peut recevoir qu'un seul rôle spécial ci-dessous. Être
-              Undercover ou Mr. White ne compte pas dans cette limite.</p>
           </div>
         </details>
 
@@ -154,10 +197,37 @@
           </div>
         </details>
 
+        <details class="setup-block" id="timerBlock">
+          <summary class="setup-block__head">
+            <span class="setup-block__num">5</span>
+            <h2>Minuteur de discussion</h2>
+            <span class="setup-block__summary" id="timerSummary">Désactivé</span>
+            <span class="setup-block__chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="setup-block__body">
+            <label class="toggle-item toggle-item--switch">
+              <input type="checkbox" id="timerEnabled">
+              <span>
+                <strong>Activer le minuteur</strong>
+                <small>Affiche un compte à rebours visuel une fois toutes les cartes consultées, pour cadrer la
+                  durée de la discussion avant le vote.</small>
+              </span>
+            </label>
+            <div class="counter-field counter-field--timer" id="timerDurationField">
+              <span class="counter-field__label">Durée de la discussion</span>
+              <div class="counter">
+                <button type="button" id="timerMinus" aria-label="Réduire la durée du minuteur">−</button>
+                <div class="counter__value"><span id="timerDisplay">3</span><small>minutes</small></div>
+                <button type="button" id="timerPlus" aria-label="Augmenter la durée du minuteur">+</button>
+              </div>
+            </div>
+          </div>
+        </details>
+
         <div class="setup-recap" id="setupRecap"></div>
 
         <div class="dossier__footer">
-          <button type="button" id="startBtn" class="btn btn--primary btn--block">Lancer la manche <span class="btn-arrow">→</span></button>
+          <button type="button" id="startBtn" class="btn btn--primary btn--block">Lancer la manche</button>
         </div>
       </div>
     </section>
@@ -189,6 +259,20 @@
         Toutes les cartes ont été consultées. La discussion peut commencer, puis lancez le vote.
       </div>
 
+      <div id="discussionTimer" class="discussion-timer" role="timer" aria-live="off">
+        <div class="discussion-timer__row">
+          <span class="discussion-timer__label">Temps de discussion</span>
+          <span class="discussion-timer__time" id="discussionTimerDisplay">03:00</span>
+        </div>
+        <div class="discussion-timer__track">
+          <div class="discussion-timer__fill" id="discussionTimerFill"></div>
+        </div>
+        <div class="discussion-timer__controls">
+          <button type="button" id="discussionTimerToggle" class="btn btn--ghost btn--small">Pause</button>
+          <button type="button" id="discussionTimerExtend" class="btn btn--ghost btn--small">+1 min</button>
+        </div>
+      </div>
+
       <div id="cardsGrid" class="cards-grid" role="list"></div>
 
       <div id="voteSection" class="vote-section">
@@ -213,8 +297,9 @@
           <button type="button" id="summaryBtn" class="btn btn--gold summary-btn--hidden">Voir tous les rôles</button>
         </div>
         <div class="actions-row__group">
+          <button type="button" id="scoreLogBtnGame" class="btn btn--ghost">Journal des scores</button>
           <button type="button" id="newRoundBtn" class="btn btn--ghost">Nouvelle manche (mêmes joueurs)</button>
-          <button type="button" id="resetBtn" class="btn btn--primary btn--white">Nouvelle partie <span class="btn-arrow">→</span></button>
+          <button type="button" id="resetBtn" class="btn btn--ghost">Nouvelle partie</button>
         </div>
       </div>
     </section>
@@ -232,7 +317,7 @@
       <div class="modal__badges" id="modalBadges"></div>
       <p class="modal__privacy">Assure-toi que personne d'autre ne regarde l'écran avant de continuer.</p>
       <div class="modal__buttons">
-        <button type="button" id="hideWordBtn" class="btn btn--primary">Cacher &amp; passer au suivant <span class="btn-arrow">→</span></button>
+        <button type="button" id="hideWordBtn" class="btn btn--primary">Cacher &amp; passer au suivant</button>
       </div>
     </div>
   </div>
@@ -246,7 +331,32 @@
       <ul class="summary-list" id="summaryList"></ul>
       <div class="modal__buttons">
         <button type="button" id="closeSummaryBtn" class="btn btn--ghost">Fermer</button>
-        <button type="button" id="summaryNewRoundBtn" class="btn btn--primary">Nouvelle manche <span class="btn-arrow">→</span></button>
+        <button type="button" id="summaryNewRoundBtn" class="btn btn--primary">Nouvelle manche</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="scoreModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="scoreModalTitle"
+    aria-hidden="true">
+    <div class="modal__scrim" id="scoreScrim"></div>
+    <div class="modal__panel summary-panel score-panel">
+      <h3 id="scoreModalTitle">Journal des scores</h3>
+      <p class="summary-sub">Historique des manches jouées sur cet appareil.</p>
+
+      <p class="score-empty" id="scoreEmptyState">Aucune manche terminée pour l'instant — les résultats
+        apparaîtront ici après la première partie.</p>
+
+      <div id="scoreContent" class="score-content">
+        <h4 class="score-section-title">Classement des joueurs</h4>
+        <ul class="score-leaderboard" id="scoreLeaderboard"></ul>
+
+        <h4 class="score-section-title">Historique des manches</h4>
+        <ul class="score-history" id="scoreHistory"></ul>
+      </div>
+
+      <div class="modal__buttons">
+        <button type="button" id="scoreResetBtn" class="btn btn--ghost">Réinitialiser le journal</button>
+        <button type="button" id="closeScoreBtn" class="btn btn--primary">Fermer</button>
       </div>
     </div>
   </div>
@@ -261,7 +371,7 @@
       <p class="modal__privacy">Le groupe est d'accord pour éliminer ce joueur ?</p>
       <div class="modal__buttons">
         <button type="button" id="voteConfirmCancel" class="btn btn--ghost">Annuler</button>
-        <button type="button" id="voteConfirmYes" class="btn btn--primary">Éliminer <span class="btn-arrow">→</span></button>
+        <button type="button" id="voteConfirmYes" class="btn btn--primary">Éliminer</button>
       </div>
     </div>
   </div>
@@ -275,7 +385,7 @@
       <div class="modal__role" id="elimRole">Civil</div>
       <p class="modal__privacy" id="elimContinueText">La partie continue.</p>
       <div class="modal__buttons">
-        <button type="button" id="elimContinueBtn" class="btn btn--primary">Continuer <span class="btn-arrow">→</span></button>
+        <button type="button" id="elimContinueBtn" class="btn btn--primary">Continuer</button>
       </div>
     </div>
   </div>
