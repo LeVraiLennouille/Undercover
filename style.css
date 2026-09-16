@@ -488,6 +488,10 @@ summary.setup-block__head::marker {
     max-width: none;
 }
 
+.hint-text--info {
+    margin-top: 12px;
+}
+
 .toggle-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -511,12 +515,69 @@ summary.setup-block__head::marker {
 }
 
 .toggle-item input[type="checkbox"] {
-    margin-top: 3px;
-    width: 16px;
-    height: 16px;
-    accent-color: var(--gold);
+    appearance: none;
+    -webkit-appearance: none;
+    margin-top: 2px;
+    width: 19px;
+    height: 19px;
     flex-shrink: 0;
+    position: relative;
+    background: var(--bg);
+    border: 1.5px solid var(--gold-soft);
+    border-radius: 4px;
     cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+}
+
+.toggle-item input[type="checkbox"]::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border-right: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    transform: rotate(38deg) scale(0);
+    transition: transform .18s cubic-bezier(.4, 1.8, .6, 1);
+}
+
+.toggle-item input[type="checkbox"]:hover {
+    border-color: var(--gold);
+}
+
+.toggle-item input[type="checkbox"]:checked {
+    background: var(--gold);
+    border-color: var(--gold);
+}
+
+.toggle-item input[type="checkbox"]:checked::after {
+    transform: rotate(38deg) scale(1);
+}
+
+.toggle-item input[type="checkbox"]:active {
+    transform: scale(.9);
+}
+
+.toggle-item input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.toggle-item input[type="checkbox"]:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    border-color: var(--panel-line);
+}
+
+.toggle-item input[type="checkbox"]:disabled:checked {
+    background: var(--muted);
+    border-color: var(--muted);
+}
+
+.toggle-item:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: .6;
 }
 
 .toggle-item span {
@@ -575,9 +636,6 @@ summary.setup-block__head::marker {
 }
 
 .toggle-list--compact .toggle-item small {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
     overflow: hidden;
     font-size: .64rem;
     line-height: 1.35;
@@ -643,31 +701,44 @@ summary.setup-block__head::marker {
 .btn--primary {
     background: var(--red);
     color: var(--cream);
-    box-shadow: 0 8px 18px -8px rgba(164, 55, 42, .6);
+    box-shadow: 0 4px 14px rgba(var(--bg), 0.2);
+    transition: transform 0.3s cubic-bezier(.22, 1, .36, 1), box-shadow 0.3s ease, color .4s ease-in-out;
+
+    .btn-arrow {
+        margin-left: 5px;
+        display: inline-block;
+        transition: transform 0.3s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    &:hover {
+        color: var(--cream);
+        box-shadow: 0 12px 28px rgba(var(--bg), 0.25);
+
+        .btn-arrow {
+            transform: translate(3px, 0);
+        }
+    }
 }
 
-.btn--primary:hover {
-    filter: brightness(1.08);
+.btn--white {
+    background: var(--cream);
+    color: #221c0e;
+
+    &:hover {
+        color: var(--gold);
+    }
 }
 
 .btn--ghost {
-    background: transparent;
-    color: var(--text);
-    border: 1px solid var(--panel-line);
+    border: 1px solid var(--gold);
+    background-color: transparent;
+    color: var(--gold);
+    transition: all 0.3s ease;
 }
 
 .btn--ghost:hover {
-    border-color: var(--gold-soft);
-    color: var(--gold);
-}
-
-.btn--gold {
-    background: var(--gold);
-    color: #221c0e;
-}
-
-.btn--gold:hover {
-    filter: brightness(1.07);
+    background-color: var(--gold-soft);
+    color: var(--cream);
 }
 
 .btn:disabled {
@@ -882,7 +953,6 @@ summary.setup-block__head::marker {
     font-size: .78rem;
     color: var(--muted-cream);
     line-height: 1.6;
-    max-width: 60ch;
     margin: 0 0 18px;
     padding: 12px 14px;
     border-left: 2px solid var(--red);
