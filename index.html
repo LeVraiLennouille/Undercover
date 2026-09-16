@@ -3,11 +3,21 @@
 
 <head>
   <meta charset="UTF-8">
+  <script>
+    (function () {
+      try {
+        var t = window.localStorage.getItem('undercover_theme_v1');
+        if (t !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Undercover — jeu de déduction</title>
   <meta name="description" content="Jeu de déduction façon Mr. White, à jouer entre amis sur un seul appareil.">
-  <meta name="theme-color" content="#10161a">
+  <meta name="theme-color" content="#f1ecdd">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="icons/icon-apple-touch.png">
@@ -24,7 +34,7 @@
 
 <body>
 
-  <button type="button" id="themeToggle" class="theme-toggle" aria-label="Passer en mode clair" aria-pressed="false">
+  <button type="button" id="themeToggle" class="theme-toggle" aria-label="Passer en mode sombre" aria-pressed="true">
     <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
       stroke-width="1.6" aria-hidden="true">
       <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5z" stroke-linecap="round" stroke-linejoin="round" />
